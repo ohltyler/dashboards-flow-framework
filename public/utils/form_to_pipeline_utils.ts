@@ -105,6 +105,83 @@ export function formikToPartialPipeline(
   return undefined;
 }
 
+// Return the entire ingest or search pipeline, depending on context.
+export function formikToPipeline(
+  values: WorkflowFormValues,
+  existingConfig: WorkflowConfig,
+  context: PROCESSOR_CONTEXT
+): IngestPipelineConfig | SearchPipelineConfig | undefined {
+  if (values?.ingest && values?.search) {
+    const uiConfig = formikToUiConfig(values, existingConfig);
+    switch (context) {
+      // Generating ingest pipeline: just fetch existing ingest processors and
+      // check if there are preceding ones
+      case PROCESSOR_CONTEXT.INGEST: {
+        const ingestProcessors = uiConfig.ingest.enrich.processors;
+
+        return !isEmpty(ingestProcessors)
+          ? ({
+              processors: processorConfigsToTemplateProcessors(
+                ingestProcessors,
+                context
+              ),
+            } as IngestPipelineConfig)
+          : undefined;
+      }
+      // // Generating search pipeline (request): just fetch existing search request
+      // // processors and check if there are preceding ones
+      // case PROCESSOR_CONTEXT.SEARCH_REQUEST: {
+      //   const precedingProcessors = getPrecedingProcessors(
+      //     uiConfig.search.enrichRequest.processors,
+      //     curProcessorId,
+      //     includeCurProcessor
+      //   );
+      //   return !isEmpty(precedingProcessors)
+      //     ? ({
+      //         request_processors: processorConfigsToTemplateProcessors(
+      //           precedingProcessors,
+      //           context
+      //         ),
+      //       } as SearchPipelineConfig)
+      //     : undefined;
+      // }
+      // // Generating search pipeline (response): fetch existing search response
+      // // processors and check if there are preceding ones. Also add on any
+      // // existing search request processors
+      // case PROCESSOR_CONTEXT.SEARCH_RESPONSE: {
+      //   const requestProcessors = uiConfig.search.enrichRequest.processors;
+      //   const precedingProcessors = getPrecedingProcessors(
+      //     uiConfig.search.enrichResponse.processors,
+      //     curProcessorId,
+      //     includeCurProcessor
+      //   );
+      //   return !isEmpty(precedingProcessors) || !isEmpty(requestProcessors)
+      //     ? ({
+      //         request_processors: processorConfigsToTemplateProcessors(
+      //           requestProcessors,
+      //           context
+      //         ),
+      //         // for search response, we need to explicitly separate out any phase results processors
+      //         phase_results_processors: processorConfigsToTemplateProcessors(
+      //           precedingProcessors.filter((processor) =>
+      //             isPhaseResultsProcessor(processor)
+      //           ),
+      //           context
+      //         ),
+      //         response_processors: processorConfigsToTemplateProcessors(
+      //           precedingProcessors.filter(
+      //             (processor) => !isPhaseResultsProcessor(processor)
+      //           ),
+      //           context
+      //         ),
+      //       } as SearchPipelineConfig)
+      //     : undefined;
+      // }
+    }
+  }
+  return undefined;
+}
+
 function getPrecedingProcessors(
   allProcessors: IProcessorConfig[],
   curProcessorId: string,

@@ -24,6 +24,8 @@ import {
 import {
   CONFIG_STEP,
   CachedFormikState,
+  PROCESSOR_CONTEXT,
+  SimulateIngestPipelineResponse,
   SimulateIngestPipelineResponseVerbose,
   TemplateNode,
   WORKFLOW_STEP_TYPE,
@@ -62,6 +64,8 @@ import {
   getIsPreV219,
   useMissingDataSourceVersion,
   getObjsFromJSONLines,
+  unwrapTransformedDocs,
+  formikToPipeline,
 } from '../../../utils';
 import { BooleanField } from './input_fields';
 import '../workspace/workspace-styles.scss';
@@ -684,6 +688,41 @@ export function WorkflowInputs(props: WorkflowInputsProps) {
     return success;
   }
 
+  // Fn to run full simulation and fetch interim outputs
+  async function runFullSimulation() {
+    const curDocs = prepareDocsForSimulate(
+      values?.ingest?.docs,
+      values?.ingest?.index?.name
+    );
+
+    const pipeline = formikToPipeline(
+      values,
+      props.uiConfig,
+      PROCESSOR_CONTEXT.INGEST
+    );
+
+    console.log('full ingest pipeline: ', pipeline);
+
+    await dispatch(
+      simulatePipeline({
+        apiBody: {
+          docs: curDocs,
+          pipeline,
+        },
+        dataSourceId,
+      })
+    )
+      .unwrap()
+      .then((resp: SimulateIngestPipelineResponse) => {
+        console.log('resp: ', resp);
+      })
+      .catch((error: any) => {
+        getCore().notifications.toasts.addDanger(
+          `Failed to simulate ingest pipeline: ${error}`
+        );
+      });
+  }
+
   return (
     <EuiPanel
       paddingSize="s"
@@ -732,6 +771,19 @@ export function WorkflowInputs(props: WorkflowInputsProps) {
                       />
                     </EuiFlexItem>
                   )}
+                  <EuiFlexItem grow={false} style={{ marginTop: '20px' }}>
+                    <EuiButtonEmpty
+                      iconSide="left"
+                      iconType="play"
+                      onClick={() => {
+                        console.log('simulating results...');
+
+                        runFullSimulation();
+                      }}
+                    >
+                      Simulate results
+                    </EuiButtonEmpty>
+                  </EuiFlexItem>
                   {(ingestProvisioned || searchProvisioned) && (
                     <EuiFlexItem grow={false} style={{ marginTop: '20px' }}>
                       <EuiButtonEmpty
