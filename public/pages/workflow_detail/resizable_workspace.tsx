@@ -28,6 +28,7 @@ import {
 import { ComponentInput } from './workflow_inputs';
 import { Workspace } from './workspace';
 import { Tools } from './tools';
+import { LeftNav } from './left_nav';
 
 // styling
 import './workspace/workspace-styles.scss';
@@ -48,7 +49,6 @@ interface ResizableWorkspaceProps {
   setUnsavedIngestProcessors: (unsavedIngestProcessors: boolean) => void;
   setUnsavedSearchProcessors: (unsavedSearchProcessors: boolean) => void;
   setCachedFormikState: (cachedFormikState: CachedFormikState) => void;
-  selectedComponentId: string;
   lastIngested: number | undefined;
 }
 
@@ -61,6 +61,9 @@ const TOOLS_PANEL_ID = 'tools_panel_id';
  * panels - the ReactFlow workspace panel and the selected component details panel.
  */
 export function ResizableWorkspace(props: ResizableWorkspaceProps) {
+  // The global state for selected component ID.
+  const [selectedComponentId, setSelectedComponentId] = useState<string>('');
+
   // Preview side panel state. This panel encapsulates the tools panel as a child resizable panel.
   const [isPreviewPanelOpen, setIsPreviewPanelOpen] = useState<boolean>(true);
   const collapseFnHorizontal = useRef(
@@ -106,7 +109,7 @@ export function ResizableWorkspace(props: ResizableWorkspaceProps) {
       style={{
         marginTop: USE_NEW_HOME_PAGE ? '0' : '58px',
         height: USE_NEW_HOME_PAGE ? '100%' : 'calc(100% - 58px)',
-        width: 'calc(100% - 500px)',
+        width: '100%',
         gap: '4px',
       }}
     >
@@ -117,6 +120,14 @@ export function ResizableWorkspace(props: ResizableWorkspaceProps) {
         }
         return (
           <>
+            <div className="left-nav-static-width">
+              <LeftNav
+                uiConfig={props.uiConfig}
+                setUiConfig={props.setUiConfig}
+                setCachedFormikState={props.setCachedFormikState}
+                setSelectedComponentId={setSelectedComponentId}
+              />
+            </div>
             <EuiResizablePanel
               id={WORKFLOW_INPUTS_PANEL_ID}
               mode="main"
@@ -126,12 +137,12 @@ export function ResizableWorkspace(props: ResizableWorkspaceProps) {
               scrollable={false}
             >
               {/**
-               * TODO: see similar comment in WorkflowDetail. TLDR is most of the global state / API
+               * TODO: most of the global state / API
                * execution will be moved from WorkflowInputs => LeftNav. Over time, the props can be
                * shifted to that component, and WorkflowInputs can eventually be entirely removed.
                */}
               <ComponentInput
-                selectedComponentId={props.selectedComponentId}
+                selectedComponentId={selectedComponentId}
                 workflow={props.workflow}
                 uiConfig={props.uiConfig as WorkflowConfig}
                 setUiConfig={props.setUiConfig}
