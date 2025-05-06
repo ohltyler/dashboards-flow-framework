@@ -13,6 +13,7 @@ import {
   EuiText,
 } from '@elastic/eui';
 import {
+  COMPONENT_ID,
   CONFIG_STEP,
   CachedFormikState,
   INSPECTOR_TAB_ID,
@@ -20,11 +21,7 @@ import {
   WorkflowConfig,
   customStringify,
 } from '../../../common';
-import {
-  isValidUiWorkflow,
-  reduceToTemplate,
-  USE_NEW_HOME_PAGE,
-} from '../../utils';
+import { isValidUiWorkflow, reduceToTemplate } from '../../utils';
 import { ComponentInput } from './workflow_inputs';
 import { Workspace } from './workspace';
 import { Tools } from './tools';
@@ -62,7 +59,9 @@ const TOOLS_PANEL_ID = 'tools_panel_id';
  */
 export function ResizableWorkspace(props: ResizableWorkspaceProps) {
   // The global state for selected component ID.
-  const [selectedComponentId, setSelectedComponentId] = useState<string>('');
+  const [selectedComponentId, setSelectedComponentId] = useState<string>(
+    COMPONENT_ID.SOURCE_DATA
+  );
 
   // Preview side panel state. This panel encapsulates the tools panel as a child resizable panel.
   const [isPreviewPanelOpen, setIsPreviewPanelOpen] = useState<boolean>(true);
@@ -141,6 +140,7 @@ export function ResizableWorkspace(props: ResizableWorkspaceProps) {
                   setSelectedInspectorTabId(INSPECTOR_TAB_ID.TEST);
                 }}
                 setCachedFormikState={props.setCachedFormikState}
+                selectedComponentId={selectedComponentId}
                 setSelectedComponentId={setSelectedComponentId}
               />
             </div>
