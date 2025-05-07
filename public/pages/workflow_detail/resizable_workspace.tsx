@@ -14,7 +14,6 @@ import {
 } from '@elastic/eui';
 import {
   COMPONENT_ID,
-  CONFIG_STEP,
   CachedFormikState,
   INSPECTOR_TAB_ID,
   Workflow,
@@ -37,14 +36,7 @@ interface ResizableWorkspaceProps {
   setUiConfig: (uiConfig: WorkflowConfig) => void;
   ingestDocs: string;
   setIngestDocs: (docs: string) => void;
-  isRunningIngest: boolean;
-  setIsRunningIngest: (isRunningIngest: boolean) => void;
-  isRunningSearch: boolean;
-  setIsRunningSearch: (isRunningSearch: boolean) => void;
-  selectedStep: CONFIG_STEP;
-  setSelectedStep: (step: CONFIG_STEP) => void;
-  setUnsavedIngestProcessors: (unsavedIngestProcessors: boolean) => void;
-  setUnsavedSearchProcessors: (unsavedSearchProcessors: boolean) => void;
+  setBlockNavigation: (blockNavigation: boolean) => void;
   setCachedFormikState: (cachedFormikState: CachedFormikState) => void;
   lastIngested: number | undefined;
 }
@@ -125,14 +117,7 @@ export function ResizableWorkspace(props: ResizableWorkspaceProps) {
                 setIngestResponse={setIngestResponse}
                 ingestDocs={props.ingestDocs}
                 setIngestDocs={props.setIngestDocs}
-                isRunningIngest={props.isRunningIngest}
-                setIsRunningIngest={props.setIsRunningIngest}
-                isRunningSearch={props.isRunningSearch}
-                setIsRunningSearch={props.setIsRunningSearch}
-                selectedStep={props.selectedStep}
-                setSelectedStep={props.setSelectedStep}
-                setUnsavedIngestProcessors={props.setUnsavedIngestProcessors}
-                setUnsavedSearchProcessors={props.setUnsavedSearchProcessors}
+                setBlockNavigation={props.setBlockNavigation}
                 displaySearchPanel={() => {
                   if (!isToolsPanelOpen) {
                     onToggleToolsChange();
@@ -226,7 +211,7 @@ export function ResizableWorkspace(props: ResizableWorkspaceProps) {
                           ingestResponse={ingestResponse}
                           selectedTabId={selectedInspectorTabId}
                           setSelectedTabId={setSelectedInspectorTabId}
-                          selectedStep={props.selectedStep}
+                          selectedComponentId={selectedComponentId}
                         />
                       </EuiResizablePanel>
                     </>
