@@ -439,6 +439,35 @@ export enum MODEL_ALGORITHM {
   AGENT = 'Agent',
 }
 
+export type Tool = {
+  type: string;
+};
+
+// Based on https://docs.opensearch.org/docs/latest/ml-commons-plugin/agents-tools/agents/index/
+export enum AGENT_TYPE {
+  CONVERSATIONAL = 'conversational',
+  PLAN_EXECUTE_REFLECT = 'plan-execute-reflect',
+}
+
+export type AgentConfig = {
+  name: string;
+  type: AGENT_TYPE;
+  description: string;
+  llm: {
+    model_id: string;
+    parameters: {};
+  };
+  memory: {
+    type: string;
+  };
+  parameters: {
+    _llm_interface?: string;
+    mcp_connectors?: {}[];
+  };
+  tools: Tool[];
+  app_type: string;
+};
+
 export type ModelConfig = {
   modelType?: string;
   embeddingDimension?: number;

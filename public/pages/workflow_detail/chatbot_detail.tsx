@@ -13,8 +13,16 @@ import {
   EuiPanel,
   EuiTextArea,
   EuiTitle,
+  EuiSmallButton,
 } from '@elastic/eui';
-import { Workflow, WorkflowConfig, WorkflowFormValues } from '../../../common';
+import {
+  AGENT_TYPE,
+  AgentConfig,
+  Tool,
+  Workflow,
+  WorkflowConfig,
+  WorkflowFormValues,
+} from '../../../common';
 import { ModelField } from './workflow_inputs';
 
 interface ChatbotDetailProps {
@@ -99,6 +107,22 @@ export function ChatbotDetail(props: ChatbotDetailProps) {
                 <ModelField fieldPath="chat.llm" />
               </EuiCompressedFormRow>
             </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiSmallButton
+                fill={false}
+                onClick={() => {
+                  const complexChatAgent = generateComplexChatAgent(
+                    formInputs.name,
+                    formInputs.description,
+                    []
+                  );
+
+                  console.log('agent: ', complexChatAgent);
+                }}
+              >
+                Create
+              </EuiSmallButton>
+            </EuiFlexItem>
           </EuiFlexGroup>
         </EuiFlexItem>
         <EuiFlexItem grow={5}>
@@ -113,4 +137,36 @@ export function ChatbotDetail(props: ChatbotDetailProps) {
       </EuiFlexGroup>
     </EuiPanel>
   );
+}
+
+// Generate the final plan-execute-reflect agent config, based on available LLM IDs and MCP IDs (if applicable)
+function generateComplexChatAgent(
+  name: string,
+  description: string,
+  tools: Tool[]
+): AgentConfig {
+  return {
+    ...getDefaultAgentConfig(),
+    name,
+    description,
+    type: AGENT_TYPE.PLAN_EXECUTE_REFLECT,
+    tools,
+  } as AgentConfig;
+}
+
+function getDefaultAgentConfig(): Partial<AgentConfig> {
+  return {
+    name: 'default_agent',
+    description: '',
+    llm: {
+      model_id: '',
+      parameters: {},
+    },
+    memory: {
+      type: 'conversation_index',
+    },
+    parameters: {},
+    tools: [],
+    app_type: 'os_chat',
+  };
 }
