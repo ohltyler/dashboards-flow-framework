@@ -4,6 +4,7 @@
  */
 
 import {
+  ML_REGISTER_AGENT_ROUTE,
   ML_SEARCH_CONNECTORS_ROUTE,
   ML_SEARCH_MODELS_ROUTE,
 } from '../../common';
@@ -31,6 +32,14 @@ export function mlPlugin(Client: any, config: any, components: any) {
   mlClient.searchConnectors = ca({
     url: {
       fmt: ML_SEARCH_CONNECTORS_ROUTE,
+    },
+    needBody: true,
+    method: 'POST',
+  });
+
+  mlClient.registerAgent = ca({
+    url: {
+      fmt: ML_REGISTER_AGENT_ROUTE,
     },
     needBody: true,
     method: 'POST',

@@ -16,6 +16,7 @@ import {
   BASE_NODE_API_PATH,
   SearchHit,
   SEARCH_CONNECTORS_NODE_API_PATH,
+  REGISTER_AGENT_NODE_API_PATH,
 } from '../../common';
 import {
   generateCustomError,
@@ -73,6 +74,27 @@ export function registerMLRoutes(
       },
     },
     mlRoutesService.searchConnectors
+  );
+  router.post(
+    {
+      path: REGISTER_AGENT_NODE_API_PATH,
+      validate: {
+        body: schema.any(),
+      },
+    },
+    mlRoutesService.registerAgent
+  );
+  router.post(
+    {
+      path: `${BASE_NODE_API_PATH}/{data_source_id}/agent/register`,
+      validate: {
+        body: schema.any(),
+        params: schema.object({
+          data_source_id: schema.string(),
+        }),
+      },
+    },
+    mlRoutesService.registerAgent
   );
 }
 
@@ -139,6 +161,31 @@ export class MLRoutesService {
       const connectorDict = getConnectorsFromResponses(connectorHits);
 
       return res.ok({ body: { connectors: connectorDict } });
+    } catch (err: any) {
+      return generateCustomError(res, err);
+    }
+  };
+
+  registerAgent = async (
+    context: RequestHandlerContext,
+    req: OpenSearchDashboardsRequest,
+    res: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<any>> => {
+    const body = req.body;
+    try {
+      const { data_source_id = '' } = req.params as { data_source_id?: string };
+      const callWithRequest = getClientBasedOnDataSource(
+        context,
+        this.dataSourceEnabled,
+        req,
+        data_source_id,
+        this.client
+      );
+      const resp = await callWithRequest('mlClient.registerAgent', {
+        body,
+      });
+
+      return res.ok({ body: resp });
     } catch (err: any) {
       return generateCustomError(res, err);
     }

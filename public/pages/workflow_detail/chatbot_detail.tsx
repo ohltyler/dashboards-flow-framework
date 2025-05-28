@@ -24,6 +24,8 @@ import {
   WorkflowFormValues,
 } from '../../../common';
 import { ModelField } from './workflow_inputs';
+import { registerAgent, useAppDispatch } from '../../store';
+import { getDataSourceId } from '../../utils';
 
 interface ChatbotDetailProps {
   workflow: Workflow;
@@ -37,6 +39,8 @@ type ChatbotInputs = {
 };
 
 export function ChatbotDetail(props: ChatbotDetailProps) {
+  const dispatch = useAppDispatch();
+  const dataSourceId = getDataSourceId();
   const { values } = useFormikContext<WorkflowFormValues>();
   const [formInputs, setFormInputs] = useState<ChatbotInputs>({
     name: '',
@@ -51,18 +55,6 @@ export function ChatbotDetail(props: ChatbotDetailProps) {
       });
     }
   }, [props.workflow]);
-  // useEffect(() => {
-  //   if (props.uiConfig?.chat !== undefined) {
-  //     setFormInputs({
-  //       ...formInputs,
-  //       llmId: props.uiConfig.chat.llm?.value || '',
-  //     });
-  //   }
-  // }, [props.uiConfig]);
-
-  console.log('final form inputs (name/description): ', formInputs);
-  console.log('chat form values: ', values?.chat);
-  console.log('chat config: ', props.uiConfig?.chat);
 
   return (
     <EuiPanel paddingSize="s" grow={true} borderRadius="l">
@@ -116,8 +108,11 @@ export function ChatbotDetail(props: ChatbotDetailProps) {
                     formInputs.description,
                     []
                   );
-
-                  console.log('agent: ', complexChatAgent);
+                  dispatch(
+                    registerAgent({ apiBody: complexChatAgent, dataSourceId })
+                  ).then((resp) => {
+                    console.log('register agent response: ', resp);
+                  });
                 }}
               >
                 Create
@@ -149,7 +144,8 @@ function generateComplexChatAgent(
     ...getDefaultAgentConfig(),
     name,
     description,
-    type: AGENT_TYPE.PLAN_EXECUTE_REFLECT,
+    // TODO: change back to plan-execute-reflect after updating local backend
+    type: AGENT_TYPE.CONVERSATIONAL,
     tools,
   } as AgentConfig;
 }
