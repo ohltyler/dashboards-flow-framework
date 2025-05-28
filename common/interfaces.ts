@@ -90,9 +90,16 @@ export type SearchConfig = {
   enrichResponse: ProcessorsConfig;
 };
 
+// TODO: make proper later on
+export type ChatConfig = {
+  llm: IConfigField;
+  mcpConnectorIds: IConfigField[];
+};
+
 export type WorkflowConfig = {
   ingest: IngestConfig;
   search: SearchConfig;
+  chat?: ChatConfig;
 };
 
 export type MapEntry = {
@@ -137,6 +144,7 @@ export type OutputMapArrayFormValue = OutputMapFormValue[];
 export type WorkflowFormValues = {
   ingest: FormikValues;
   search: FormikValues;
+  chat: FormikValues;
 };
 
 export type WorkflowSchemaObj = {

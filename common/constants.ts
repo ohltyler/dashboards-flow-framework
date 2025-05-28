@@ -174,6 +174,7 @@ export enum WORKFLOW_TYPE {
   VECTOR_SEARCH_WITH_RAG = 'RAG with Vector Retrieval',
   HYBRID_SEARCH_WITH_RAG = 'RAG with Hybrid Search',
   CUSTOM = 'Custom Search',
+  COMPLEX_CHATBOT = 'Complex Chatbot',
   UNKNOWN = 'Unknown',
 }
 export enum WORKFLOW_TYPE_LEGACY {

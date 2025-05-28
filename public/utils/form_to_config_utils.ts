@@ -13,6 +13,7 @@ import {
   ProcessorsConfig,
   IndexConfig,
   SearchIndexConfig,
+  ChatConfig,
 } from '../../common';
 import { getInitialValue } from './config_to_form_utils';
 
@@ -33,6 +34,13 @@ export function formikToUiConfig(
     formValues.search,
     updatedConfig.search
   ) as SearchConfig;
+
+  if (existingConfig.chat !== undefined) {
+    updatedConfig['chat'] = formikToChatUiConfig(
+      formValues.chat,
+      updatedConfig.chat
+    ) as ChatConfig;
+  }
 
   return {
     ...updatedConfig,
@@ -133,5 +141,13 @@ function formikToProcessorsUiConfig(
       );
     });
   });
+  return existingConfig;
+}
+
+function formikToChatUiConfig(
+  chatFormValues: FormikValues,
+  existingConfig: ChatConfig
+): ChatConfig {
+  existingConfig['llm'].value = chatFormValues['llm'];
   return existingConfig;
 }
