@@ -16,6 +16,7 @@ import {
   ConfigFieldValue,
   ModelFormValue,
   SearchIndexConfig,
+  ChatConfig,
 } from '../../common';
 
 /*
@@ -32,6 +33,9 @@ export function uiConfigToFormik(
   const formikValues = {} as WorkflowFormValues;
   formikValues['ingest'] = ingestConfigToFormik(config.ingest, ingestDocs);
   formikValues['search'] = searchConfigToFormik(config.search);
+  if (config.chat !== undefined) {
+    formikValues['chat'] = chatConfigToFormik(config.chat);
+  }
   return formikValues;
 }
 
@@ -118,6 +122,13 @@ function searchIndexConfigToFormik(
   formValues['name'] =
     searchIndexConfig.name.value ||
     getInitialValue(searchIndexConfig.name.type);
+  return formValues;
+}
+
+function chatConfigToFormik(chatConfig: ChatConfig): FormikValues {
+  let formValues = {} as FormikValues;
+  formValues['llm'] =
+    chatConfig.llm.value || getInitialValue(chatConfig.llm.type);
   return formValues;
 }
 

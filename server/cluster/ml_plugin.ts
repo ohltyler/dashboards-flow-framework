@@ -4,6 +4,8 @@
  */
 
 import {
+  ML_AGENT_ROUTE_PREFIX,
+  ML_REGISTER_AGENT_ROUTE,
   ML_SEARCH_CONNECTORS_ROUTE,
   ML_SEARCH_MODELS_ROUTE,
 } from '../../common';
@@ -31,6 +33,28 @@ export function mlPlugin(Client: any, config: any, components: any) {
   mlClient.searchConnectors = ca({
     url: {
       fmt: ML_SEARCH_CONNECTORS_ROUTE,
+    },
+    needBody: true,
+    method: 'POST',
+  });
+
+  mlClient.registerAgent = ca({
+    url: {
+      fmt: ML_REGISTER_AGENT_ROUTE,
+    },
+    needBody: true,
+    method: 'POST',
+  });
+
+  mlClient.executeAgent = ca({
+    url: {
+      fmt: `${ML_AGENT_ROUTE_PREFIX}/<%=agent_id%>/_execute`,
+      req: {
+        agent_id: {
+          type: 'string',
+          required: true,
+        },
+      },
     },
     needBody: true,
     method: 'POST',
