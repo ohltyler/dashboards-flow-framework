@@ -49,6 +49,7 @@ import {
   WorkflowFormValues,
   WorkflowSchema,
   getCharacterLimitedString,
+  isChatUseCase,
 } from '../../../common';
 import { MountPoint } from '../../../../../src/core/public';
 import {
@@ -56,6 +57,7 @@ import {
   getDataSourceId,
 } from '../../utils/utils';
 import { getDataSourceEnabled } from '../../services';
+import { ChatbotDetail } from './chatbot_detail';
 
 // styling
 import './workflow-detail-styles.scss';
@@ -297,15 +299,19 @@ export function WorkflowDetail(props: WorkflowDetailProps) {
                   }}
                 >
                   <EuiFlexItem>
-                    <ResizableWorkspace
-                      workflow={workflow}
-                      uiConfig={uiConfig}
-                      setUiConfig={setUiConfig}
-                      ingestDocs={ingestDocs}
-                      setIngestDocs={setIngestDocs}
-                      setBlockNavigation={setBlockNavigation}
-                      setCachedFormikState={setCachedFormikState}
-                    />
+                    {isChatUseCase(workflow?.ui_metadata?.type) ? (
+                      <ChatbotDetail workflow={workflow} uiConfig={uiConfig} />
+                    ) : (
+                      <ResizableWorkspace
+                        workflow={workflow}
+                        uiConfig={uiConfig}
+                        setUiConfig={setUiConfig}
+                        ingestDocs={ingestDocs}
+                        setIngestDocs={setIngestDocs}
+                        setBlockNavigation={setBlockNavigation}
+                        setCachedFormikState={setCachedFormikState}
+                      />
+                    )}
                   </EuiFlexItem>
                 </EuiFlexGroup>
               </EuiPageBody>

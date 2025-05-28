@@ -30,6 +30,7 @@ import {
   HYBRID_SEARCH_QUERY_MATCH_NEURAL,
   MATCH_QUERY_TEXT,
   NEURAL_SPARSE_SEARCH_QUERY,
+  ChatConfig,
 } from '../../../../common';
 import { generateId } from '../../../utils';
 import semver from 'semver';
@@ -67,6 +68,10 @@ export function enrichPresetWorkflowWithUiMetadata(
     }
     case WORKFLOW_TYPE.SEMANTIC_SEARCH_USING_SPARSE_ENCODERS: {
       uiMetadata = fetchNeuralSparseSearchMetadata(workflowVersion);
+      break;
+    }
+    case WORKFLOW_TYPE.COMPLEX_CHATBOT: {
+      uiMetadata = fetchComplexChatbotMetadata();
       break;
     }
     default: {
@@ -190,16 +195,19 @@ export function fetchNeuralSparseSearchMetadata(version: string): UIState {
 
   baseState.config.ingest.enrich.processors = [new MLIngestProcessor().toObj()];
 
-  baseState.config.ingest.index.name.value = generateId('neural_sparse_index', 6);
+  baseState.config.ingest.index.name.value = generateId(
+    'neural_sparse_index',
+    6
+  );
   baseState.config.ingest.index.settings.value = customStringify({});
 
-    baseState.config.search.request.value = customStringify(MATCH_QUERY_TEXT);
+  baseState.config.search.request.value = customStringify(MATCH_QUERY_TEXT);
   baseState.config.search.enrichRequest.processors = [
-        injectQueryTemplateInProcessor(
-          new MLSearchRequestProcessor().toObj(),
-          NEURAL_SPARSE_SEARCH_QUERY
-        ),
-      ];
+    injectQueryTemplateInProcessor(
+      new MLSearchRequestProcessor().toObj(),
+      NEURAL_SPARSE_SEARCH_QUERY
+    ),
+  ];
 
   return baseState;
 }
@@ -315,6 +323,27 @@ export function fetchHybridSearchWithRAGMetadata(version: string): UIState {
     new MLSearchResponseProcessor().toObj(),
   ];
   return baseState;
+}
+
+export function fetchComplexChatbotMetadata(): UIState {
+  let baseState = fetchEmptyMetadata();
+  baseState.type = WORKFLOW_TYPE.COMPLEX_CHATBOT;
+  baseState.config.chat = fetchDefaultChatUIConfig();
+  return baseState;
+}
+
+function fetchDefaultChatUIConfig() {
+  return {
+    llm: {
+      id: 'llm',
+      type: 'model',
+      value: {
+        id: '',
+      },
+    },
+    mcpConnectorIds: [],
+    tools: [],
+  } as ChatConfig;
 }
 
 // populate the `query_template` config value with a given query template
