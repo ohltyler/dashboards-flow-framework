@@ -66,3 +66,10 @@ export function isRAGUseCase(workflowType?: WORKFLOW_TYPE): boolean {
     ].includes(workflowType)
   );
 }
+
+export function isChatUseCase(workflowType?: WORKFLOW_TYPE): boolean {
+  return (
+    workflowType !== undefined &&
+    [WORKFLOW_TYPE.COMPLEX_CHATBOT].includes(workflowType)
+  );
+}

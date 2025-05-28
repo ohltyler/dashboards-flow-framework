@@ -50,6 +50,7 @@ import {
   WorkflowFormValues,
   WorkflowSchema,
   getCharacterLimitedString,
+  isChatUseCase,
 } from '../../../common';
 import { MountPoint } from '../../../../../src/core/public';
 import {
@@ -57,6 +58,7 @@ import {
   getDataSourceId,
 } from '../../utils/utils';
 import { getDataSourceEnabled } from '../../services';
+import { ChatbotDetail } from './chatbot_detail';
 
 // styling
 import './workflow-detail-styles.scss';
@@ -311,22 +313,26 @@ export function WorkflowDetail(props: WorkflowDetailProps) {
                   setActionMenu={props.setActionMenu}
                   setBlockNavigation={setBlockNavigation}
                 />
-                <ResizableWorkspace
-                  workflow={workflow}
-                  uiConfig={uiConfig}
-                  setUiConfig={setUiConfig}
-                  ingestDocs={ingestDocs}
-                  setIngestDocs={setIngestDocs}
-                  isRunningIngest={isRunningIngest}
-                  setIsRunningIngest={setIsRunningIngest}
-                  isRunningSearch={isRunningSearch}
-                  setIsRunningSearch={setIsRunningSearch}
-                  selectedStep={selectedStep}
-                  setSelectedStep={setSelectedStep}
-                  setUnsavedIngestProcessors={setUnsavedIngestProcessors}
-                  setUnsavedSearchProcessors={setUnsavedSearchProcessors}
-                  setCachedFormikState={setCachedFormikState}
-                />
+                {isChatUseCase(workflow?.ui_metadata?.type) ? (
+                  <ChatbotDetail workflow={workflow} uiConfig={uiConfig} />
+                ) : (
+                  <ResizableWorkspace
+                    workflow={workflow}
+                    uiConfig={uiConfig}
+                    setUiConfig={setUiConfig}
+                    ingestDocs={ingestDocs}
+                    setIngestDocs={setIngestDocs}
+                    isRunningIngest={isRunningIngest}
+                    setIsRunningIngest={setIsRunningIngest}
+                    isRunningSearch={isRunningSearch}
+                    setIsRunningSearch={setIsRunningSearch}
+                    selectedStep={selectedStep}
+                    setSelectedStep={setSelectedStep}
+                    setUnsavedIngestProcessors={setUnsavedIngestProcessors}
+                    setUnsavedSearchProcessors={setUnsavedSearchProcessors}
+                    setCachedFormikState={setCachedFormikState}
+                  />
+                )}
               </EuiPageBody>
             </EuiPage>
           </ReactFlowProvider>

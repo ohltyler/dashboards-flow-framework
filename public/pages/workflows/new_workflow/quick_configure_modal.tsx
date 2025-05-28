@@ -60,6 +60,7 @@ import {
   ML_REMOTE_MODEL_LINK,
   MODEL_CATEGORY,
   isRAGUseCase,
+  isChatUseCase,
 } from '../../../../common';
 import { APP_PATH, getInitialValue } from '../../../utils';
 import { AppState, createWorkflow, useAppDispatch } from '../../../store';
@@ -141,7 +142,7 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
     // If not custom/blank, we will have more req'd form fields for the users to supply
     if (workflowType !== WORKFLOW_TYPE.CUSTOM) {
       // if a RAG workflow, require an LLM
-      if (isRAGUseCase(workflowType)) {
+      if (isRAGUseCase(workflowType) || isChatUseCase(workflowType)) {
         tempFormValues = {
           ...tempFormValues,
           llm: getInitialValue('model'),
@@ -158,21 +159,23 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
           }),
         };
       }
-      tempFormValues = {
-        ...tempFormValues,
-        embeddingModel: getInitialValue('model'),
-      };
-      tempFormSchemaObj = {
-        ...tempFormSchemaObj,
-        embeddingModel: yup.object({
-          id: yup
-            .string()
-            .trim()
-            .min(1, 'Too short')
-            .max(MAX_STRING_LENGTH, 'Too long')
-            .required('Required'),
-        }),
-      };
+      if (!isChatUseCase(workflowType)) {
+        tempFormValues = {
+          ...tempFormValues,
+          embeddingModel: getInitialValue('model'),
+        };
+        tempFormSchemaObj = {
+          ...tempFormSchemaObj,
+          embeddingModel: yup.object({
+            id: yup
+              .string()
+              .trim()
+              .min(1, 'Too short')
+              .max(MAX_STRING_LENGTH, 'Too long')
+              .required('Required'),
+          }),
+        };
+      }
     }
     setFormValues(tempFormValues);
     setFormSchemaObj(tempFormSchemaObj);
@@ -292,7 +295,8 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
                       />
                     </EuiFlexItem>
                   )}
-                {isRAGUseCase(props.workflow?.ui_metadata?.type) && (
+                {(isRAGUseCase(props.workflow?.ui_metadata?.type) ||
+                  isChatUseCase(props.workflow?.ui_metadata?.type)) && (
                   <EuiFlexItem>
                     <ModelField
                       modelCategory={MODEL_CATEGORY.LLM}
@@ -312,6 +316,7 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
                   </EuiFlexItem>
                 )}
                 {props.workflow?.ui_metadata?.type !== WORKFLOW_TYPE.CUSTOM &&
+                  !isChatUseCase(props.workflow?.ui_metadata?.type) &&
                   !isEmpty(deployedModels) && (
                     <EuiFlexItem>
                       <>
@@ -344,16 +349,17 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
                     </EuiFlexItem>
                   )}
               </EuiFlexGroup>
-              {props.workflow?.ui_metadata?.type !== WORKFLOW_TYPE.CUSTOM && (
-                <>
-                  <EuiSpacer size="m" />
-                  <QuickConfigureOptionalFields
-                    workflowType={props.workflow.ui_metadata?.type}
-                    fields={quickConfigureFields}
-                    setFields={setQuickConfigureFields}
-                  />
-                </>
-              )}
+              {props.workflow?.ui_metadata?.type !== WORKFLOW_TYPE.CUSTOM &&
+                !isChatUseCase(props.workflow?.ui_metadata?.type) && (
+                  <>
+                    <EuiSpacer size="m" />
+                    <QuickConfigureOptionalFields
+                      workflowType={props.workflow.ui_metadata?.type}
+                      fields={quickConfigureFields}
+                      setFields={setQuickConfigureFields}
+                    />
+                  </>
+                )}
             </EuiModalBody>
             <EuiModalFooter>
               <EuiSmallButtonEmpty
@@ -488,6 +494,11 @@ function injectQuickConfigureFields(
             llmInterface
           );
         }
+        break;
+      }
+      case WORKFLOW_TYPE.COMPLEX_CHATBOT: {
+        workflow.ui_metadata.config.chat.llm.value.id =
+          quickConfigureFields?.llmId;
         break;
       }
       case WORKFLOW_TYPE.CUSTOM:

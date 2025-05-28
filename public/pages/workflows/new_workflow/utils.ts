@@ -29,6 +29,7 @@ import {
   MULTIMODAL_SEARCH_QUERY_NEURAL,
   HYBRID_SEARCH_QUERY_MATCH_NEURAL,
   MATCH_QUERY_TEXT,
+  ChatConfig,
 } from '../../../../common';
 import { generateId } from '../../../utils';
 import semver from 'semver';
@@ -62,6 +63,10 @@ export function enrichPresetWorkflowWithUiMetadata(
     }
     case WORKFLOW_TYPE.HYBRID_SEARCH_WITH_RAG: {
       uiMetadata = fetchHybridSearchWithRAGMetadata(workflowVersion);
+      break;
+    }
+    case WORKFLOW_TYPE.COMPLEX_CHATBOT: {
+      uiMetadata = fetchComplexChatbotMetadata();
       break;
     }
     default: {
@@ -290,6 +295,27 @@ export function fetchHybridSearchWithRAGMetadata(version: string): UIState {
     new MLSearchResponseProcessor().toObj(),
   ];
   return baseState;
+}
+
+export function fetchComplexChatbotMetadata(): UIState {
+  let baseState = fetchEmptyMetadata();
+  baseState.type = WORKFLOW_TYPE.COMPLEX_CHATBOT;
+  baseState.config.chat = fetchDefaultChatUIConfig();
+  return baseState;
+}
+
+function fetchDefaultChatUIConfig() {
+  return {
+    llm: {
+      id: 'llm',
+      type: 'model',
+      value: {
+        id: '',
+      },
+    },
+    mcpConnectorIds: [],
+    tools: [],
+  } as ChatConfig;
 }
 
 // populate the `query_template` config value with a given query template

@@ -90,9 +90,26 @@ export type SearchConfig = {
   enrichResponse: ProcessorsConfig;
 };
 
+export type ToolConfig = {
+  type: string;
+  name?: string;
+  description?: string;
+  alias?: string;
+  parameters?: {};
+};
+export type ToolsConfig = ToolConfig[];
+
+// TODO: make proper later on
+export type ChatConfig = {
+  llm: IConfigField;
+  mcpConnectorIds: IConfigField[]; // list of string configs, each being connector id
+  tools: ToolsConfig;
+};
+
 export type WorkflowConfig = {
   ingest: IngestConfig;
   search: SearchConfig;
+  chat?: ChatConfig;
 };
 
 export type MapEntry = {
@@ -137,6 +154,7 @@ export type OutputMapArrayFormValue = OutputMapFormValue[];
 export type WorkflowFormValues = {
   ingest: FormikValues;
   search: FormikValues;
+  chat: FormikValues;
 };
 
 export type WorkflowSchemaObj = {
@@ -431,6 +449,35 @@ export enum MODEL_ALGORITHM {
   AGENT = 'Agent',
 }
 
+export type Tool = {
+  type: string;
+};
+
+// Based on https://docs.opensearch.org/docs/latest/ml-commons-plugin/agents-tools/agents/index/
+export enum AGENT_TYPE {
+  CONVERSATIONAL = 'conversational',
+  PLAN_EXECUTE_REFLECT = 'plan-execute-reflect',
+}
+
+export type AgentConfig = {
+  name: string;
+  type: AGENT_TYPE;
+  description: string;
+  llm: {
+    model_id: string;
+    parameters?: {};
+  };
+  memory?: {
+    type: string;
+  };
+  parameters: {
+    _llm_interface?: string;
+    mcp_connectors?: {}[];
+  };
+  tools: Tool[];
+  app_type: string;
+};
+
 export type ModelConfig = {
   modelType?: string;
   embeddingDimension?: number;
@@ -522,12 +569,14 @@ export enum WORKFLOW_RESOURCE_TYPE {
   MODEL_ID = 'Model',
   MODEL_GROUP_ID = 'Model group',
   CONNECTOR_ID = 'Connector',
+  AGENT = 'Agent',
 }
 
 export enum WORKFLOW_STEP_TYPE {
   CREATE_INGEST_PIPELINE_STEP_TYPE = 'create_ingest_pipeline',
   CREATE_SEARCH_PIPELINE_STEP_TYPE = 'create_search_pipeline',
   CREATE_INDEX_STEP_TYPE = 'create_index',
+  REGISTER_AGENT_STEP_TYPE = 'register_agent',
 }
 
 // We cannot disambiguate ingest vs. search pipelines based on workflow resource type. To work around
@@ -536,6 +585,7 @@ export enum WORKFLOW_STEP_TO_RESOURCE_TYPE_MAP {
   'create_ingest_pipeline' = 'Ingest pipeline',
   'create_search_pipeline' = 'Search pipeline',
   'create_index' = 'Index',
+  'register_agent' = 'Agent',
 }
 
 export type WorkflowDict = {
