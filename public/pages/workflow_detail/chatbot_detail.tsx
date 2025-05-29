@@ -27,6 +27,7 @@ import {
   sleep,
   useDataSourceVersion,
 } from '../../utils';
+import { Resources } from './tools/resources';
 
 interface ChatbotDetailProps {
   workflow: Workflow;
@@ -99,7 +100,7 @@ export function ChatbotDetail(props: ChatbotDetailProps) {
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
                 <EuiCompressedFormRow label="Large language model">
-                  <ModelField fieldPath="chat.llm" />
+                  <ModelField fieldPath="chat.llm" hasModelInterface={true} />
                 </EuiCompressedFormRow>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
@@ -122,12 +123,6 @@ export function ChatbotDetail(props: ChatbotDetailProps) {
                         false
                       ),
                     } as Workflow;
-
-                    console.log('updated workflow: ', updatedWorkflow);
-
-                    console.log(
-                      JSON.stringify(reduceToTemplate(updatedWorkflow))
-                    );
 
                     await dispatch(
                       updateWorkflow({
@@ -163,10 +158,22 @@ export function ChatbotDetail(props: ChatbotDetailProps) {
           </EuiFlexItem>
           <EuiFlexItem grow={5}>
             <EuiFlexGroup direction="column">
-              <EuiFlexItem grow={false}>
-                <EuiTitle size="s">
-                  <h3>Test</h3>
-                </EuiTitle>
+              <EuiFlexItem grow={5}>
+                <EuiFlexItem grow={false}>
+                  <EuiTitle size="s">
+                    <h3>Test</h3>
+                  </EuiTitle>
+                </EuiFlexItem>
+              </EuiFlexItem>
+              <EuiFlexItem grow={5}>
+                <EuiFlexItem grow={false}>
+                  <EuiTitle size="s">
+                    <h3>Resources</h3>
+                  </EuiTitle>
+                </EuiFlexItem>
+                <EuiFlexItem>
+                  <Resources workflow={props.workflow} />
+                </EuiFlexItem>
               </EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>

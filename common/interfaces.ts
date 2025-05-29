@@ -560,6 +560,7 @@ export enum WORKFLOW_RESOURCE_TYPE {
   MODEL_ID = 'Model',
   MODEL_GROUP_ID = 'Model group',
   CONNECTOR_ID = 'Connector',
+  AGENT = 'Agent',
 }
 
 export enum WORKFLOW_STEP_TYPE {
@@ -575,6 +576,7 @@ export enum WORKFLOW_STEP_TO_RESOURCE_TYPE_MAP {
   'create_ingest_pipeline' = 'Ingest pipeline',
   'create_search_pipeline' = 'Search pipeline',
   'create_index' = 'Index',
+  'register_agent' = 'Agent',
 }
 
 export type WorkflowDict = {
