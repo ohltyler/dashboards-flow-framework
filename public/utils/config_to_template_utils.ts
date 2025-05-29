@@ -38,6 +38,9 @@ import {
   OutputMapFormValue,
   NO_TRANSFORMATION,
   PROCESSOR_CONTEXT,
+  ChatConfig,
+  AgentConfig,
+  AGENT_TYPE,
 } from '../../common';
 import { processorConfigToFormik } from './config_to_form_utils';
 import { sanitizeJSONPath } from './utils';
@@ -74,6 +77,9 @@ function configToProvisionTemplateFlow(
   }
   if (includeSearch) {
     nodes.push(...searchConfigToTemplateNodes(config.search));
+  }
+  if (config.chat !== undefined) {
+    nodes.push(...chatConfigToTemplateNodes(config.chat));
   }
 
   const createIngestPipelineNode = nodes.find(
@@ -529,6 +535,40 @@ function indexConfigToTemplateNode(
       }),
     },
   };
+}
+
+// For now, just create the final register_agent step.
+// TODO: support creation for dependent resources, including LLMs and MCP connectors
+export function chatConfigToTemplateNodes(
+  chatConfig: ChatConfig
+): TemplateNode[] {
+  const agentConfig = {
+    name: 'default_agent',
+    // TODO: change back to plan-execute-reflect after updating local backend
+    type: AGENT_TYPE.CONVERSATIONAL,
+    description: '',
+    llm: {
+      model_id: chatConfig.llm.value?.id,
+    },
+    memory: {
+      type: 'conversation_index',
+    },
+    parameters: {},
+    // TODO: support tools configuration
+    tools: [],
+    // TODO: support MCP connector configuration
+    // mcp_connectors: [],
+    app_type: 'os_chat',
+  } as AgentConfig;
+
+  const registerAgentNode = {
+    id: 'chat_agent',
+    type: WORKFLOW_STEP_TYPE.REGISTER_AGENT_STEP_TYPE,
+    previous_node_inputs: {},
+    user_inputs: agentConfig,
+  } as TemplateNode;
+
+  return [registerAgentNode];
 }
 
 // Helper fn to remove state-related fields from a workflow and have a stateless template

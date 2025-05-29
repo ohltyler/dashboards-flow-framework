@@ -93,7 +93,8 @@ export type SearchConfig = {
 // TODO: make proper later on
 export type ChatConfig = {
   llm: IConfigField;
-  mcpConnectorIds: IConfigField[];
+  mcpConnectorIds: IConfigField[]; // list of string configs, each being connector id
+  tools: IConfigField[]; // list of string configs, each being tool type
 };
 
 export type WorkflowConfig = {
@@ -455,9 +456,9 @@ export type AgentConfig = {
   description: string;
   llm: {
     model_id: string;
-    parameters: {};
+    parameters?: {};
   };
-  memory: {
+  memory?: {
     type: string;
   };
   parameters: {
@@ -565,6 +566,7 @@ export enum WORKFLOW_STEP_TYPE {
   CREATE_INGEST_PIPELINE_STEP_TYPE = 'create_ingest_pipeline',
   CREATE_SEARCH_PIPELINE_STEP_TYPE = 'create_search_pipeline',
   CREATE_INDEX_STEP_TYPE = 'create_index',
+  REGISTER_AGENT_STEP_TYPE = 'register_agent',
 }
 
 // We cannot disambiguate ingest vs. search pipelines based on workflow resource type. To work around
