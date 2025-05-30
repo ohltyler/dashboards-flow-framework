@@ -555,7 +555,7 @@ export function chatConfigToTemplateNodes(
     },
     parameters: {},
     // TODO: support tools configuration
-    tools: [],
+    tools: [{ type: 'ListIndexTool' }, { type: 'SearchIndexTool' }],
     // TODO: support MCP connector configuration
     // mcp_connectors: [],
     app_type: 'os_chat',
