@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useFormikContext } from 'formik';
+import { isEmpty } from 'lodash';
 import {
   EuiCompressedFormRow,
   EuiFieldText,
@@ -15,10 +16,24 @@ import {
   EuiTitle,
   EuiSmallButton,
   EuiLoadingSpinner,
+  EuiCodeEditor,
+  EuiCallOut,
 } from '@elastic/eui';
-import { Workflow, WorkflowConfig, WorkflowFormValues } from '../../../common';
+import {
+  customStringify,
+  Workflow,
+  WORKFLOW_STEP_TYPE,
+  WorkflowConfig,
+  WorkflowFormValues,
+} from '../../../common';
 import { ModelField } from './workflow_inputs';
-import { provisionWorkflow, updateWorkflow, useAppDispatch } from '../../store';
+import {
+  executeAgent,
+  getWorkflow,
+  provisionWorkflow,
+  updateWorkflow,
+  useAppDispatch,
+} from '../../store';
 import {
   configToTemplateFlows,
   formikToUiConfig,
@@ -45,6 +60,8 @@ export function ChatbotDetail(props: ChatbotDetailProps) {
   const dataSourceId = getDataSourceId();
   const dataSourceVersion = useDataSourceVersion(dataSourceId);
   const { values } = useFormikContext<WorkflowFormValues>();
+
+  // Update name/description if users set
   const [formInputs, setFormInputs] = useState<ChatbotInputs>({
     name: '',
     description: '',
@@ -58,6 +75,22 @@ export function ChatbotDetail(props: ChatbotDetailProps) {
       });
     }
   }, [props.workflow]);
+
+  // Fetch agent ID if set
+  const [agentId, setAgentId] = useState<string>('');
+  useEffect(() => {
+    const agentResource = props.workflow?.resourcesCreated?.find(
+      (resource) =>
+        resource.stepType === WORKFLOW_STEP_TYPE.REGISTER_AGENT_STEP_TYPE
+    );
+    if (agentResource !== undefined) {
+      setAgentId(agentResource?.id);
+    }
+  }, [props.workflow]);
+
+  const [executeInput, setExecuteInput] = useState<string>('{}');
+  const [executeOutput, setExecuteOutput] = useState<string>('{}');
+  const [executeError, setExecuteError] = useState<string>('');
 
   return (
     <EuiPanel paddingSize="s" grow={true} borderRadius="l">
@@ -104,66 +137,180 @@ export function ChatbotDetail(props: ChatbotDetailProps) {
                 </EuiCompressedFormRow>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
-                <EuiSmallButton
-                  fill={false}
-                  onClick={async () => {
-                    const updatedConfig = formikToUiConfig(
-                      values,
-                      props.uiConfig as WorkflowConfig
-                    );
-                    const updatedWorkflow = {
-                      ...props.workflow,
-                      ui_metadata: {
-                        ...props.workflow?.ui_metadata,
-                        config: updatedConfig,
-                      },
-                      workflows: configToTemplateFlows(
-                        updatedConfig,
-                        false,
-                        false
-                      ),
-                    } as Workflow;
+                <EuiFlexGroup direction="row">
+                  <EuiFlexItem grow={false}>
+                    <EuiSmallButton
+                      fill={false}
+                      onClick={async () => {
+                        const updatedConfig = formikToUiConfig(
+                          values,
+                          props.uiConfig as WorkflowConfig
+                        );
+                        const updatedWorkflow = {
+                          ...props.workflow,
+                          ui_metadata: {
+                            ...props.workflow?.ui_metadata,
+                            config: updatedConfig,
+                          },
+                          workflows: configToTemplateFlows(
+                            updatedConfig,
+                            false,
+                            false
+                          ),
+                        } as Workflow;
 
-                    await dispatch(
-                      updateWorkflow({
-                        apiBody: {
-                          workflowId: updatedWorkflow.id as string,
-                          workflowTemplate: reduceToTemplate(updatedWorkflow),
-                          reprovision: false,
-                        },
-                        dataSourceId,
-                      })
-                    )
-                      .unwrap()
-                      .then(async () => {
-                        await sleep(1000);
                         await dispatch(
-                          provisionWorkflow({
-                            workflowId: updatedWorkflow.id as string,
+                          updateWorkflow({
+                            apiBody: {
+                              workflowId: updatedWorkflow.id as string,
+                              workflowTemplate: reduceToTemplate(
+                                updatedWorkflow
+                              ),
+                              reprovision: false,
+                            },
                             dataSourceId,
-                            dataSourceVersion,
                           })
                         )
                           .unwrap()
-                          .then((resp) => {
-                            console.log('provision response: ', resp);
+                          .then(async () => {
+                            await sleep(1000);
+                            await dispatch(
+                              provisionWorkflow({
+                                workflowId: updatedWorkflow.id as string,
+                                dataSourceId,
+                                dataSourceVersion,
+                              })
+                            )
+                              .unwrap()
+                              .then(async (resp) => {
+                                console.log('provision response: ', resp);
+                                await dispatch(
+                                  getWorkflow({
+                                    workflowId: updatedWorkflow.id as string,
+                                    dataSourceId,
+                                  })
+                                );
+                              });
                           });
-                      });
-                  }}
-                >
-                  Create
-                </EuiSmallButton>
+                      }}
+                    >
+                      Create
+                    </EuiSmallButton>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
               </EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>
           <EuiFlexItem grow={5}>
             <EuiFlexGroup direction="column">
               <EuiFlexItem grow={5}>
-                <EuiFlexItem grow={false}>
-                  <EuiTitle size="s">
-                    <h3>Test</h3>
-                  </EuiTitle>
-                </EuiFlexItem>
+                <EuiFlexGroup direction="column">
+                  <EuiFlexItem grow={false}>
+                    <EuiTitle size="s">
+                      <h3>Test</h3>
+                    </EuiTitle>
+                  </EuiFlexItem>
+                  <EuiFlexItem grow={false}>
+                    <EuiCompressedFormRow label="Input" fullWidth={true}>
+                      <EuiCodeEditor
+                        mode="json"
+                        theme="textmate"
+                        width="100%"
+                        height={'15vh'}
+                        value={executeInput}
+                        onChange={(input) => {
+                          setExecuteInput(input);
+                        }}
+                        // format on blur
+                        onBlur={() => {
+                          try {
+                            setExecuteInput(
+                              customStringify(JSON.parse(executeInput))
+                            );
+                          } catch (error) {
+                          } finally {
+                          }
+                        }}
+                        readOnly={false}
+                        setOptions={{
+                          fontSize: '14px',
+                          useWorker: true,
+                          highlightActiveLine: true,
+                          highlightSelectedWord: true,
+                          highlightGutterLine: true,
+                          wrap: true,
+                        }}
+                        aria-label="Exeute agent input"
+                        tabSize={2}
+                      />
+                    </EuiCompressedFormRow>
+                  </EuiFlexItem>
+                  <EuiFlexItem grow={false}>
+                    <EuiFlexGroup direction="row">
+                      <EuiFlexItem grow={false}>
+                        <EuiSmallButton
+                          fill={false}
+                          disabled={isEmpty(agentId) || isEmpty(executeInput)}
+                          onClick={async () => {
+                            await dispatch(
+                              executeAgent({
+                                agentId,
+                                apiBody: executeInput,
+                                dataSourceId,
+                              })
+                            )
+                              .unwrap()
+                              .then((resp) => {
+                                console.log('execute response: ', resp);
+                                setExecuteError('');
+                              })
+                              .catch((err) => {
+                                setExecuteError(err);
+                              });
+                          }}
+                        >
+                          Execute
+                        </EuiSmallButton>
+                      </EuiFlexItem>
+                    </EuiFlexGroup>
+                  </EuiFlexItem>
+                  {!isEmpty(executeError) && (
+                    <EuiFlexItem grow={false}>
+                      <EuiCallOut
+                        size="s"
+                        iconType="alert"
+                        color="danger"
+                        title={executeError}
+                      />
+                    </EuiFlexItem>
+                  )}
+                  <EuiFlexItem>
+                    <EuiCompressedFormRow label="Output" fullWidth={true}>
+                      <EuiCodeEditor
+                        mode="json"
+                        theme="textmate"
+                        width="100%"
+                        height={'15vh'}
+                        value={executeOutput}
+                        // onChange={(output) => {
+                        //   setExecuteInput(input);
+                        // }}
+                        isReadOnly={true}
+                        readOnly={false}
+                        setOptions={{
+                          fontSize: '14px',
+                          useWorker: true,
+                          highlightActiveLine: false,
+                          highlightSelectedWord: false,
+                          highlightGutterLine: false,
+                          wrap: true,
+                        }}
+                        aria-label="Exeute agent output"
+                        tabSize={2}
+                      />
+                    </EuiCompressedFormRow>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
               </EuiFlexItem>
               <EuiFlexItem grow={5}>
                 <EuiFlexItem grow={false}>

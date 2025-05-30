@@ -17,6 +17,7 @@ import {
   SearchHit,
   SEARCH_CONNECTORS_NODE_API_PATH,
   REGISTER_AGENT_NODE_API_PATH,
+  EXECUTE_AGENT_NODE_API_PATH,
 } from '../../common';
 import {
   generateCustomError,
@@ -95,6 +96,31 @@ export function registerMLRoutes(
       },
     },
     mlRoutesService.registerAgent
+  );
+  router.post(
+    {
+      path: `${EXECUTE_AGENT_NODE_API_PATH}/{agent_id}`,
+      validate: {
+        body: schema.any(),
+        params: schema.object({
+          agent_id: schema.string(),
+        }),
+      },
+    },
+    mlRoutesService.executeAgent
+  );
+  router.post(
+    {
+      path: `${BASE_NODE_API_PATH}/{data_source_id}/agent/execute/{agent_id}`,
+      validate: {
+        body: schema.any(),
+        params: schema.object({
+          data_source_id: schema.string(),
+          agent_id: schema.string(),
+        }),
+      },
+    },
+    mlRoutesService.executeAgent
   );
 }
 
@@ -185,6 +211,34 @@ export class MLRoutesService {
         body,
       });
 
+      return res.ok({ body: resp });
+    } catch (err: any) {
+      return generateCustomError(res, err);
+    }
+  };
+
+  executeAgent = async (
+    context: RequestHandlerContext,
+    req: OpenSearchDashboardsRequest,
+    res: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<any>> => {
+    const body = req.body;
+    try {
+      const { agent_id } = req.params as {
+        agent_id: string;
+      };
+      const { data_source_id = '' } = req.params as { data_source_id?: string };
+      const callWithRequest = getClientBasedOnDataSource(
+        context,
+        this.dataSourceEnabled,
+        req,
+        data_source_id,
+        this.client
+      );
+      const resp = await callWithRequest('mlClient.executeAgent', {
+        agent_id,
+        body,
+      });
       return res.ok({ body: resp });
     } catch (err: any) {
       return generateCustomError(res, err);

@@ -76,6 +76,7 @@ export const BASE_AGENT_NODE_API_PATH = `${BASE_NODE_API_PATH}/agent`;
 export const SEARCH_MODELS_NODE_API_PATH = `${BASE_MODEL_NODE_API_PATH}/search`;
 export const SEARCH_CONNECTORS_NODE_API_PATH = `${BASE_CONNECTOR_NODE_API_PATH}/search`;
 export const REGISTER_AGENT_NODE_API_PATH = `${BASE_AGENT_NODE_API_PATH}/register`;
+export const EXECUTE_AGENT_NODE_API_PATH = `${BASE_AGENT_NODE_API_PATH}/execute`;
 
 /**
  * Remote model dimensions. Used for attempting to pre-fill dimension size

@@ -548,7 +548,7 @@ export function chatConfigToTemplateNodes(
     type: AGENT_TYPE.CONVERSATIONAL,
     description: '',
     llm: {
-      model_id: chatConfig.llm.value?.id,
+      model_id: chatConfig.llm?.value?.id,
     },
     memory: {
       type: 'conversation_index',
