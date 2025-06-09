@@ -34,7 +34,7 @@ export function Console(props: ConsoleProps) {
     <EuiFlexItem
       style={{
         height: props.consoleOpen ? CONSOLE_HEIGHT_OPEN : CONSOLE_HEIGHT_CLOSED,
-        marginTop: '-12px',
+        marginTop: '4px',
         marginBottom: '0px',
         marginRight: '0px',
         marginLeft: '16px',
@@ -46,6 +46,7 @@ export function Console(props: ConsoleProps) {
           height: props.consoleOpen
             ? CONSOLE_HEIGHT_OPEN
             : CONSOLE_HEIGHT_CLOSED,
+          paddingTop: '8px',
         }}
       >
         <EuiFlexGroup direction="column">

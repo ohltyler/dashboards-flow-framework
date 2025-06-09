@@ -124,16 +124,15 @@ export function ResizableWorkspace(props: ResizableWorkspaceProps) {
       <EuiResizableContainer
         key={`${leftNavOpen}${consoleOpen}`} // re-render when the left nav or console is toggled, to re-generate the correct width
         direction="horizontal"
-        className="stretch-relative"
         style={{
-          width: '100%',
           height: `calc(100% - ${
             consoleOpen ? consoleHeightOpened : consoleHeightClosed
           })`,
           gap: '4px',
-          overflow: 'scroll',
+          overflow: 'hidden',
           marginLeft: '16px',
           marginTop: '8px',
+          marginBottom: '0px',
         }}
       >
         {(EuiResizablePanel, EuiResizableButton, { togglePanel }) => {
