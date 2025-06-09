@@ -844,6 +844,8 @@ export const MAX_WORKFLOW_NAME_TO_DISPLAY = 40;
 export const WORKFLOW_NAME_REGEXP = RegExp('^[a-zA-Z0-9_-]*$');
 export const INDEX_NAME_REGEXP = WORKFLOW_NAME_REGEXP;
 export const PROVISION_TIMEOUT = '10s'; // the timeout config for synchronous provisioning. https://github.com/opensearch-project/flow-framework/pull/990
+export const CONSOLE_HEIGHT_CLOSED = '60px';
+export const CONSOLE_HEIGHT_OPEN = '40vh';
 export const EMPTY_MAP_ENTRY = { key: '', value: '' } as MapEntry;
 export const EMPTY_INPUT_MAP_ENTRY = {
   key: '',

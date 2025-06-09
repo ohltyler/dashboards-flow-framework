@@ -918,7 +918,7 @@ export function LeftNav(props: LeftNavProps) {
                   gutterSize="s"
                   style={{
                     padding: '0px',
-                    marginBottom: USE_NEW_HOME_PAGE ? '0px' : '54px',
+                    marginBottom: USE_NEW_HOME_PAGE ? '0px' : '4px',
                   }}
                 >
                   {onIngestAndUnprovisioned &&

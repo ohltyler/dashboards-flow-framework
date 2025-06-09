@@ -6,14 +6,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
 import {
-  EuiButtonIcon,
   EuiCodeBlock,
   EuiEmptyPrompt,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiPanel,
   EuiResizableContainer,
-  EuiSmallButtonIcon,
   EuiText,
 } from '@elastic/eui';
 import {
@@ -28,6 +25,7 @@ import { isValidUiWorkflow, reduceToTemplate } from '../../utils';
 import { ComponentInput } from './component_input';
 import { Tools } from './tools';
 import { LeftNav } from './left_nav';
+import { Console } from './console';
 
 // styling
 import './workspace/workspace-styles.scss';
@@ -120,9 +118,7 @@ export function ResizableWorkspace(props: ResizableWorkspaceProps) {
       direction="column"
       className="stretch-absolute"
       style={{
-        width: '100%',
-        gap: '4px',
-        overflow: 'scroll',
+        overflow: 'hidden',
       }}
     >
       <EuiResizableContainer
@@ -136,6 +132,8 @@ export function ResizableWorkspace(props: ResizableWorkspaceProps) {
           })`,
           gap: '4px',
           overflow: 'scroll',
+          marginLeft: '16px',
+          marginTop: '8px',
         }}
       >
         {(EuiResizablePanel, EuiResizableButton, { togglePanel }) => {
@@ -218,39 +216,7 @@ export function ResizableWorkspace(props: ResizableWorkspaceProps) {
           );
         }}
       </EuiResizableContainer>
-      {/**
-       * Basic console component
-       */}
-      <EuiFlexItem
-        style={{
-          height: consoleOpen ? consoleHeightOpened : consoleHeightClosed,
-        }}
-      >
-        <EuiFlexGroup direction="column">
-          <EuiFlexItem grow={false}>
-            <EuiFlexGroup direction="row" justifyContent="spaceBetween">
-              <EuiFlexItem grow={false} style={{ marginLeft: '18px' }}>
-                <EuiText>
-                  <b>Console</b>
-                </EuiText>
-              </EuiFlexItem>
-              <EuiFlexItem grow={false}>
-                <EuiSmallButtonIcon
-                  iconType={consoleOpen ? 'arrowDown' : 'arrowUp'}
-                  onClick={() => setConsoleOpen(!consoleOpen)}
-                />
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlexItem>
-          {consoleOpen && (
-            <EuiFlexItem>
-              <EuiPanel grow={true}>
-                <EuiText>Some console details</EuiText>
-              </EuiPanel>
-            </EuiFlexItem>
-          )}
-        </EuiFlexGroup>
-      </EuiFlexItem>
+      <Console consoleOpen={consoleOpen} setConsoleOpen={setConsoleOpen} />
     </EuiFlexGroup>
   ) : (
     <EuiFlexGroup direction="column">
