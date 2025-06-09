@@ -215,7 +215,11 @@ export function ResizableWorkspace(props: ResizableWorkspaceProps) {
           );
         }}
       </EuiResizableContainer>
-      <Console consoleOpen={consoleOpen} setConsoleOpen={setConsoleOpen} />
+      <Console
+        consoleOpen={consoleOpen}
+        setConsoleOpen={setConsoleOpen}
+        ingestResponse={ingestResponse}
+      />
     </EuiFlexGroup>
   ) : (
     <EuiFlexGroup direction="column">
