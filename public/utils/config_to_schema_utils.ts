@@ -140,10 +140,11 @@ function processorsConfigToSchema(processorsConfig: ProcessorsConfig): Schema {
 }
 
 function agentUIConfigToSchema(agentUIConfig: AgentUIConfig): Schema {
-  const chatSchemaObj = {} as { [key: string]: Schema };
-  chatSchemaObj['llm'] = getFieldSchema(agentUIConfig.llm);
+  const agentSchemaObj = {} as { [key: string]: Schema };
+  agentSchemaObj['type'] = getFieldSchema(agentUIConfig.type);
+  agentSchemaObj['llm'] = getFieldSchema(agentUIConfig.llm);
 
-  return yup.object(chatSchemaObj);
+  return yup.object(agentSchemaObj);
 }
 
 /*

@@ -22,6 +22,7 @@ export function ToolsInputs(props: ToolsInputsProps) {
     <EuiAccordion
       id="agentTools"
       buttonContent={<EuiText size="s">Tools</EuiText>}
+      initialIsOpen={true}
     >
       <EuiSpacer size="s" />
       <EuiPanel>

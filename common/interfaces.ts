@@ -102,6 +102,7 @@ export type ToolsConfig = ToolConfig[];
 
 // TODO: make proper later on
 export type AgentUIConfig = {
+  type: IConfigField;
   llm: IConfigField;
   mcpConnectorIds: IConfigField[]; // list of string configs, each being connector id
   tools: ToolsConfig;
@@ -457,7 +458,7 @@ export type Tool = {
 // Based on https://docs.opensearch.org/docs/latest/ml-commons-plugin/agents-tools/agents/index/
 export enum AGENT_TYPE {
   CONVERSATIONAL = 'conversational',
-  PLAN_EXECUTE_REFLECT = 'plan-execute-reflect',
+  PLAN_EXECUTE_REFLECT = 'plan_execute_and_reflect',
 }
 
 export type AgentConfig = {

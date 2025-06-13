@@ -127,6 +127,8 @@ function searchIndexConfigToFormik(
 
 function agentConfigToFormik(agentUIConfig: AgentUIConfig): FormikValues {
   let formValues = {} as FormikValues;
+  formValues['type'] =
+    agentUIConfig.type.value || getInitialValue(agentUIConfig.type.type);
   formValues['llm'] =
     agentUIConfig.llm.value || getInitialValue(agentUIConfig.llm.type);
   formValues['tools'] = agentUIConfig.tools || [];

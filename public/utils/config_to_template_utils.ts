@@ -51,6 +51,7 @@ import { sanitizeJSONPath } from './utils';
  */
 
 const AGENT_TEMPLATE_NODE_ID = 'agent';
+const DEFAULT_AGENT_NAME = 'default_agent';
 
 export function configToTemplateFlows(
   config: WorkflowConfig,
@@ -560,23 +561,6 @@ export function agentUIConfigToTemplateNodes(
   agentUIConfig: AgentUIConfig
 ): TemplateNode[] {
   const toolNodes = toolsConfigToTemplateNodes(agentUIConfig.tools);
-  const agentConfig = {
-    name: 'default_agent',
-    // TODO: change back to plan-execute-reflect after updating local backend
-    type: AGENT_TYPE.CONVERSATIONAL,
-    description: '',
-    llm: {
-      model_id: agentUIConfig.llm?.value?.id,
-    },
-    memory: {
-      type: 'conversation_index',
-    },
-    parameters: {},
-    // TODO: support MCP connector as part of chat config
-    // mcp_connectors: [],
-    app_type: 'os_chat',
-  } as AgentConfig;
-
   const registerAgentNode = {
     id: AGENT_TEMPLATE_NODE_ID,
     type: WORKFLOW_STEP_TYPE.REGISTER_AGENT_STEP_TYPE,
@@ -585,7 +569,7 @@ export function agentUIConfigToTemplateNodes(
       tools[tool.id] = 'tools';
       return tools;
     }, {}),
-    user_inputs: agentConfig,
+    user_inputs: agentUIConfigToAgentConfig(agentUIConfig),
   } as TemplateNode;
 
   return [...toolNodes, registerAgentNode];
@@ -614,6 +598,37 @@ function agentUIConfigToTemplateEdges(
       } as TemplateEdge;
     }
   );
+}
+
+function agentUIConfigToAgentConfig(
+  agentUIConfig: AgentUIConfig
+): Partial<AgentConfig> {
+  console.log('agent config: ', agentUIConfig);
+  return {
+    name: DEFAULT_AGENT_NAME,
+    type: agentUIConfig.type.value,
+    description: '',
+    llm: {
+      model_id: agentUIConfig.llm?.value?.id,
+      // TODO: this should be dynamic
+      parameters: {
+        prompt: '${parameters.question}',
+      },
+    },
+    memory: {
+      type: 'conversation_index',
+    },
+    parameters:
+      agentUIConfig.type.value === AGENT_TYPE.PLAN_EXECUTE_REFLECT
+        ? {
+            _llm_interface: 'bedrock/converse/claude',
+          }
+        : {},
+    // TODO: support MCP connector as part of chat config
+    // mcp_connectors: [],
+    // TODO: is app_type needed
+    // app_type: 'os_chat',
+  } as Partial<AgentConfig>;
 }
 
 // Helper fn to remove state-related fields from a workflow and have a stateless template
