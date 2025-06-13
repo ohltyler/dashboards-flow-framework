@@ -14,6 +14,10 @@ import { Workflow, WorkflowConfig } from '../../../../common';
 import { AgentInputs } from './agent_inputs.tsx';
 import { TestAgent } from './test_agent';
 
+// styling
+import '../workspace/workspace-styles.scss';
+import '../../../global-styles.scss';
+
 interface AgentDetailProps {
   workflow: Workflow;
   uiConfig: WorkflowConfig | undefined;
@@ -21,9 +25,17 @@ interface AgentDetailProps {
 
 export function AgentDetail(props: AgentDetailProps) {
   return (
-    <EuiPanel paddingSize="s" grow={true} borderRadius="l">
+    <EuiPanel
+      paddingSize="s"
+      borderRadius="l"
+      className="stretch-absolute"
+      style={{
+        width: '100%',
+        gap: '4px',
+      }}
+    >
       {props.uiConfig !== undefined ? (
-        <EuiFlexGroup direction="row">
+        <EuiFlexGroup direction="row" className="stretch-absolute">
           <EuiFlexItem grow={5}>
             <AgentInputs workflow={props.workflow} uiConfig={props.uiConfig} />
           </EuiFlexItem>
@@ -32,6 +44,7 @@ export function AgentDetail(props: AgentDetailProps) {
           </EuiFlexItem>
         </EuiFlexGroup>
       ) : (
+        // <AgentInputs workflow={props.workflow} uiConfig={props.uiConfig} />
         <EuiLoadingSpinner size="xl" />
       )}
     </EuiPanel>
