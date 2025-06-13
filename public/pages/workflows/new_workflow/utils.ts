@@ -33,6 +33,7 @@ import {
   AgentUIConfig,
   TOOL_TYPE,
   ToolConfig,
+  AGENT_TYPE,
 } from '../../../../common';
 import { generateId } from '../../../utils';
 import semver from 'semver';
@@ -342,6 +343,12 @@ export function fetchComplexChatbotMetadata(): UIState {
 
 function fetchDefaultAgentUIConfig() {
   return {
+    type: {
+      id: 'type',
+      type: 'select',
+      value: '',
+      selectOptions: Object.values(AGENT_TYPE),
+    },
     llm: {
       id: 'llm',
       type: 'model',
