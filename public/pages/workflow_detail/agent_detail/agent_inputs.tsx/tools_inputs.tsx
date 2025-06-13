@@ -3,57 +3,38 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useState } from 'react';
-import { useFormikContext } from 'formik';
+import React from 'react';
 import {
-  EuiCompressedFormRow,
-  EuiFieldText,
   EuiFlexGroup,
   EuiFlexItem,
-  EuiTextArea,
-  EuiTitle,
-  EuiSmallButton,
+  EuiSpacer,
+  EuiText,
+  EuiAccordion,
   EuiPanel,
 } from '@elastic/eui';
-import {
-  Workflow,
-  WorkflowConfig,
-  WorkflowFormValues,
-} from '../../../../../common';
-import { ModelField } from '../../component_input';
-import {
-  getWorkflow,
-  provisionWorkflow,
-  updateWorkflow,
-  useAppDispatch,
-} from '../../../../store';
-import {
-  configToTemplateFlows,
-  formikToUiConfig,
-  getDataSourceId,
-  reduceToTemplate,
-  sleep,
-  useDataSourceVersion,
-} from '../../../../utils';
+import { TOOL_DESCRIPTIONS, TOOL_TYPE } from '../../../../../common';
+import { Tool } from './tool';
 
 interface ToolsInputsProps {}
 
 export function ToolsInputs(props: ToolsInputsProps) {
-  const dispatch = useAppDispatch();
-  const dataSourceId = getDataSourceId();
-  const dataSourceVersion = useDataSourceVersion(dataSourceId);
-  const { values } = useFormikContext<WorkflowFormValues>();
-
   return (
-    <EuiFlexGroup direction="column">
-      <EuiFlexItem grow={false}>
-        <EuiTitle size="s">
-          <h3>Tools</h3>
-        </EuiTitle>
-      </EuiFlexItem>
-      <EuiFlexItem grow={false}>
-        <EuiPanel grow={false} style={{ height: '30vh' }}></EuiPanel>
-      </EuiFlexItem>
-    </EuiFlexGroup>
+    <EuiAccordion
+      id="agentTools"
+      buttonContent={<EuiText size="s">Tools</EuiText>}
+    >
+      <EuiSpacer size="s" />
+      <EuiPanel>
+        <EuiFlexGroup direction="column" gutterSize="s">
+          {Object.values(TOOL_TYPE).map((tool) => {
+            return (
+              <EuiFlexItem grow={false} key={tool} id={tool}>
+                <Tool type={tool} description={TOOL_DESCRIPTIONS[tool] || ''} />
+              </EuiFlexItem>
+            );
+          })}
+        </EuiFlexGroup>
+      </EuiPanel>
+    </EuiAccordion>
   );
 }

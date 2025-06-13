@@ -242,6 +242,18 @@ export enum PROCESSOR_TYPE {
   COPY = 'copy',
 }
 
+// Full list at https://docs.opensearch.org/docs/latest/ml-commons-plugin/agents-tools/tools/index/
+export enum TOOL_TYPE {
+  INDEX_MAPPING = 'IndexMappingTool',
+  LIST_INDEX = 'ListIndexTool',
+  SEARCH_INDEX = 'SearchIndexTool',
+}
+export const TOOL_DESCRIPTIONS = {
+  [TOOL_TYPE.INDEX_MAPPING]: 'Get index mappings.',
+  [TOOL_TYPE.LIST_INDEX]: 'List indices in the cluster.',
+  [TOOL_TYPE.SEARCH_INDEX]: 'Search an index.',
+};
+
 export enum MODEL_TYPE {
   TEXT_EMBEDDING = 'text_embedding',
   SPARSE_ENCODER = 'sparse_encoder',

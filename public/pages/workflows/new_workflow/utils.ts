@@ -31,6 +31,8 @@ import {
   MATCH_QUERY_TEXT,
   NEURAL_SPARSE_SEARCH_QUERY,
   AgentUIConfig,
+  TOOL_TYPE,
+  ToolConfig,
 } from '../../../../common';
 import { generateId } from '../../../utils';
 import semver from 'semver';
@@ -329,6 +331,12 @@ export function fetchComplexChatbotMetadata(): UIState {
   let baseState = fetchEmptyMetadata();
   baseState.type = WORKFLOW_TYPE.COMPLEX_CHATBOT;
   baseState.config.agent = fetchDefaultAgentUIConfig();
+  // enable all tools
+  baseState.config.agent.tools = Object.values(TOOL_TYPE).map((tool) => {
+    return {
+      type: tool,
+    } as ToolConfig;
+  });
   return baseState;
 }
 
