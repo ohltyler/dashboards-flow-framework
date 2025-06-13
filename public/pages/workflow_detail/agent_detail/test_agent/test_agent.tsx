@@ -13,6 +13,7 @@ import {
   EuiSmallButton,
   EuiCodeEditor,
   EuiCallOut,
+  EuiPanel,
 } from '@elastic/eui';
 import {
   customStringify,
@@ -23,6 +24,10 @@ import {
 import { executeAgent, useAppDispatch } from '../../../../store';
 import { getDataSourceId } from '../../../../utils';
 import { Resources } from '../../tools/resources';
+
+// styling
+import '../../workspace/workspace-styles.scss';
+import '../../../../global-styles.scss';
 
 interface TestAgentProps {
   workflow: Workflow;
@@ -50,124 +55,142 @@ export function TestAgent(props: TestAgentProps) {
   const [executeError, setExecuteError] = useState<string>('');
 
   return (
-    <EuiFlexGroup direction="column">
-      <EuiFlexItem grow={5}>
-        <EuiFlexGroup direction="column">
+    <EuiPanel
+      data-testid="leftNavPanel"
+      paddingSize="s"
+      grow={false}
+      className="workspace-panel"
+      borderRadius="l"
+      style={{
+        paddingBottom: '48px',
+        marginRight: '0px',
+      }}
+    >
+      <EuiFlexItem grow={false}>
+        <EuiFlexGroup direction="row" justifyContent="spaceBetween">
           <EuiFlexItem grow={false}>
-            <EuiTitle size="s">
+            <EuiTitle>
               <h3>Test</h3>
             </EuiTitle>
           </EuiFlexItem>
-          <EuiFlexItem grow={false}>
-            <EuiCompressedFormRow label="Input" fullWidth={true}>
-              <EuiCodeEditor
-                mode="json"
-                theme="textmate"
-                width="100%"
-                height={'15vh'}
-                value={executeInput}
-                onChange={(input) => {
-                  setExecuteInput(input);
-                }}
-                // format on blur
-                onBlur={() => {
-                  try {
-                    setExecuteInput(customStringify(JSON.parse(executeInput)));
-                  } catch (error) {
-                  } finally {
-                  }
-                }}
-                readOnly={false}
-                setOptions={{
-                  fontSize: '14px',
-                  useWorker: true,
-                  highlightActiveLine: true,
-                  highlightSelectedWord: true,
-                  highlightGutterLine: true,
-                  wrap: true,
-                }}
-                aria-label="Exeute agent input"
-                tabSize={2}
-              />
-            </EuiCompressedFormRow>
-          </EuiFlexItem>
-          <EuiFlexItem grow={false}>
-            <EuiFlexGroup direction="row">
-              <EuiFlexItem grow={false}>
-                <EuiSmallButton
-                  fill={false}
-                  disabled={isEmpty(agentId) || isEmpty(executeInput)}
-                  onClick={async () => {
-                    await dispatch(
-                      executeAgent({
-                        agentId,
-                        apiBody: executeInput,
-                        dataSourceId,
-                      })
-                    )
-                      .unwrap()
-                      .then((resp) => {
-                        console.log('execute response: ', resp);
-                        setExecuteError('');
-                      })
-                      .catch((err) => {
-                        setExecuteError(err);
-                      });
-                  }}
-                >
-                  Execute
-                </EuiSmallButton>
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </EuiFlexItem>
-          {!isEmpty(executeError) && (
-            <EuiFlexItem grow={false}>
-              <EuiCallOut
-                size="s"
-                iconType="alert"
-                color="danger"
-                title={executeError}
-              />
-            </EuiFlexItem>
-          )}
-          <EuiFlexItem>
-            <EuiCompressedFormRow label="Output" fullWidth={true}>
-              <EuiCodeEditor
-                mode="json"
-                theme="textmate"
-                width="100%"
-                height={'15vh'}
-                value={executeOutput}
-                // onChange={(output) => {
-                //   setExecuteInput(input);
-                // }}
-                isReadOnly={true}
-                readOnly={false}
-                setOptions={{
-                  fontSize: '14px',
-                  useWorker: true,
-                  highlightActiveLine: false,
-                  highlightSelectedWord: false,
-                  highlightGutterLine: false,
-                  wrap: true,
-                }}
-                aria-label="Exeute agent output"
-                tabSize={2}
-              />
-            </EuiCompressedFormRow>
-          </EuiFlexItem>
         </EuiFlexGroup>
       </EuiFlexItem>
-      <EuiFlexItem grow={5}>
-        <EuiFlexItem grow={false}>
-          <EuiTitle size="s">
-            <h3>Resources</h3>
-          </EuiTitle>
+      <EuiFlexGroup direction="column">
+        <EuiFlexItem grow={5}>
+          <EuiFlexGroup direction="column">
+            <EuiFlexItem grow={false}>
+              <EuiCompressedFormRow label="Input" fullWidth={true}>
+                <EuiCodeEditor
+                  mode="json"
+                  theme="textmate"
+                  width="100%"
+                  height={'15vh'}
+                  value={executeInput}
+                  onChange={(input) => {
+                    setExecuteInput(input);
+                  }}
+                  // format on blur
+                  onBlur={() => {
+                    try {
+                      setExecuteInput(
+                        customStringify(JSON.parse(executeInput))
+                      );
+                    } catch (error) {
+                    } finally {
+                    }
+                  }}
+                  readOnly={false}
+                  setOptions={{
+                    fontSize: '14px',
+                    useWorker: true,
+                    highlightActiveLine: true,
+                    highlightSelectedWord: true,
+                    highlightGutterLine: true,
+                    wrap: true,
+                  }}
+                  aria-label="Exeute agent input"
+                  tabSize={2}
+                />
+              </EuiCompressedFormRow>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiFlexGroup direction="row">
+                <EuiFlexItem grow={false}>
+                  <EuiSmallButton
+                    fill={false}
+                    disabled={isEmpty(agentId) || isEmpty(executeInput)}
+                    onClick={async () => {
+                      await dispatch(
+                        executeAgent({
+                          agentId,
+                          apiBody: executeInput,
+                          dataSourceId,
+                        })
+                      )
+                        .unwrap()
+                        .then((resp) => {
+                          console.log('execute response: ', resp);
+                          setExecuteError('');
+                        })
+                        .catch((err) => {
+                          setExecuteError(err);
+                        });
+                    }}
+                  >
+                    Execute
+                  </EuiSmallButton>
+                </EuiFlexItem>
+              </EuiFlexGroup>
+            </EuiFlexItem>
+            {!isEmpty(executeError) && (
+              <EuiFlexItem grow={false}>
+                <EuiCallOut
+                  size="s"
+                  iconType="alert"
+                  color="danger"
+                  title={executeError}
+                />
+              </EuiFlexItem>
+            )}
+            <EuiFlexItem>
+              <EuiCompressedFormRow label="Output" fullWidth={true}>
+                <EuiCodeEditor
+                  mode="json"
+                  theme="textmate"
+                  width="100%"
+                  height={'15vh'}
+                  value={executeOutput}
+                  // onChange={(output) => {
+                  //   setExecuteInput(input);
+                  // }}
+                  isReadOnly={true}
+                  readOnly={false}
+                  setOptions={{
+                    fontSize: '14px',
+                    useWorker: true,
+                    highlightActiveLine: false,
+                    highlightSelectedWord: false,
+                    highlightGutterLine: false,
+                    wrap: true,
+                  }}
+                  aria-label="Exeute agent output"
+                  tabSize={2}
+                />
+              </EuiCompressedFormRow>
+            </EuiFlexItem>
+          </EuiFlexGroup>
         </EuiFlexItem>
-        <EuiFlexItem>
-          <Resources workflow={props.workflow} />
+        <EuiFlexItem grow={5}>
+          <EuiFlexItem grow={false}>
+            <EuiTitle size="s">
+              <h3>Resources</h3>
+            </EuiTitle>
+          </EuiFlexItem>
+          <EuiFlexItem>
+            <Resources workflow={props.workflow} />
+          </EuiFlexItem>
         </EuiFlexItem>
-      </EuiFlexItem>
-    </EuiFlexGroup>
+      </EuiFlexGroup>
+    </EuiPanel>
   );
 }
