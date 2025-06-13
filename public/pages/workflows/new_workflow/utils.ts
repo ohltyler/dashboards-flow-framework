@@ -338,6 +338,7 @@ export function fetchComplexChatbotMetadata(): UIState {
       type: tool,
     } as ToolConfig;
   });
+  baseState.config.agent.type.value = AGENT_TYPE.PLAN_EXECUTE_REFLECT;
   return baseState;
 }
 
