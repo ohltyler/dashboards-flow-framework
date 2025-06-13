@@ -100,7 +100,7 @@ export type ToolConfig = {
 export type ToolsConfig = ToolConfig[];
 
 // TODO: make proper later on
-export type ChatConfig = {
+export type AgentUIConfig = {
   llm: IConfigField;
   mcpConnectorIds: IConfigField[]; // list of string configs, each being connector id
   tools: ToolsConfig;
@@ -109,7 +109,7 @@ export type ChatConfig = {
 export type WorkflowConfig = {
   ingest: IngestConfig;
   search: SearchConfig;
-  chat?: ChatConfig;
+  agent?: AgentUIConfig;
 };
 
 export type MapEntry = {
@@ -154,7 +154,7 @@ export type OutputMapArrayFormValue = OutputMapFormValue[];
 export type WorkflowFormValues = {
   ingest: FormikValues;
   search: FormikValues;
-  chat: FormikValues;
+  agent: FormikValues;
 };
 
 export type WorkflowSchemaObj = {

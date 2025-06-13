@@ -38,7 +38,7 @@ import {
   OutputMapFormValue,
   NO_TRANSFORMATION,
   PROCESSOR_CONTEXT,
-  ChatConfig,
+  AgentUIConfig,
   AgentConfig,
   AGENT_TYPE,
   ToolsConfig,
@@ -84,8 +84,8 @@ function configToProvisionTemplateFlow(
       ...searchConfigToTemplateNodes(config.search, searchProvisioned)
     );
   }
-  if (config.chat !== undefined) {
-    nodes.push(...chatConfigToTemplateNodes(config.chat));
+  if (config.agent !== undefined) {
+    nodes.push(...agentUIConfigToTemplateNodes(config.agent));
   }
 
   const createIngestPipelineNode = nodes.find(
@@ -553,8 +553,8 @@ function indexConfigToTemplateNode(
 
 // For now, just create the final register_agent step.
 // TODO: support creation for dependent resources, including LLMs and MCP connectors
-export function chatConfigToTemplateNodes(
-  chatConfig: ChatConfig
+export function agentUIConfigToTemplateNodes(
+  agentUIConfig: AgentUIConfig
 ): TemplateNode[] {
   const agentConfig = {
     name: 'default_agent',
@@ -562,7 +562,7 @@ export function chatConfigToTemplateNodes(
     type: AGENT_TYPE.CONVERSATIONAL,
     description: '',
     llm: {
-      model_id: chatConfig.llm?.value?.id,
+      model_id: agentUIConfig.llm?.value?.id,
     },
     memory: {
       type: 'conversation_index',
@@ -583,7 +583,7 @@ export function chatConfigToTemplateNodes(
   } as TemplateNode;
 
   // TODO: support creating tool nodes
-  const toolNodes = toolsConfigToTemplateNodes(chatConfig.tools);
+  const toolNodes = toolsConfigToTemplateNodes(agentUIConfig.tools);
 
   return [...toolNodes, registerAgentNode];
 }

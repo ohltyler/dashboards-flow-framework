@@ -49,7 +49,7 @@ import {
   WorkflowFormValues,
   WorkflowSchema,
   getCharacterLimitedString,
-  isChatUseCase,
+  isAgentUseCase,
 } from '../../../common';
 import { MountPoint } from '../../../../../src/core/public';
 import {
@@ -57,7 +57,7 @@ import {
   getDataSourceId,
 } from '../../utils/utils';
 import { getDataSourceEnabled } from '../../services';
-import { ChatbotDetail } from './chatbot_detail';
+import { AgentDetail } from './agent_detail';
 
 // styling
 import './workflow-detail-styles.scss';
@@ -299,8 +299,8 @@ export function WorkflowDetail(props: WorkflowDetailProps) {
                   }}
                 >
                   <EuiFlexItem>
-                    {isChatUseCase(workflow?.ui_metadata?.type) ? (
-                      <ChatbotDetail workflow={workflow} uiConfig={uiConfig} />
+                    {isAgentUseCase(workflow?.ui_metadata?.type) ? (
+                      <AgentDetail workflow={workflow} uiConfig={uiConfig} />
                     ) : (
                       <ResizableWorkspace
                         workflow={workflow}

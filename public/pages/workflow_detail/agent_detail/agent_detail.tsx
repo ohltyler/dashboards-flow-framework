@@ -25,15 +25,15 @@ import {
   WORKFLOW_STEP_TYPE,
   WorkflowConfig,
   WorkflowFormValues,
-} from '../../../common';
-import { ModelField } from './workflow_inputs';
+} from '../../../../common';
+import { ModelField } from '../component_input';
 import {
   executeAgent,
   getWorkflow,
   provisionWorkflow,
   updateWorkflow,
   useAppDispatch,
-} from '../../store';
+} from '../../../store';
 import {
   configToTemplateFlows,
   formikToUiConfig,
@@ -41,28 +41,28 @@ import {
   reduceToTemplate,
   sleep,
   useDataSourceVersion,
-} from '../../utils';
-import { Resources } from './tools/resources';
+} from '../../../utils';
+import { Resources } from '../tools/resources';
 
-interface ChatbotDetailProps {
+interface AgentDetailProps {
   workflow: Workflow;
   uiConfig: WorkflowConfig | undefined;
 }
 
 // non-ui-config inputs, like name/description
-type ChatbotInputs = {
+type AgentInputs = {
   name: string;
   description: string;
 };
 
-export function ChatbotDetail(props: ChatbotDetailProps) {
+export function AgentDetail(props: AgentDetailProps) {
   const dispatch = useAppDispatch();
   const dataSourceId = getDataSourceId();
   const dataSourceVersion = useDataSourceVersion(dataSourceId);
   const { values } = useFormikContext<WorkflowFormValues>();
 
   // Update name/description if users set
-  const [formInputs, setFormInputs] = useState<ChatbotInputs>({
+  const [formInputs, setFormInputs] = useState<AgentInputs>({
     name: '',
     description: '',
   });
@@ -133,7 +133,7 @@ export function ChatbotDetail(props: ChatbotDetailProps) {
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
                 <EuiCompressedFormRow label="Large language model">
-                  <ModelField fieldPath="chat.llm" hasModelInterface={true} />
+                  <ModelField fieldPath="agent.llm" hasModelInterface={true} />
                 </EuiCompressedFormRow>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>

@@ -13,7 +13,7 @@ import {
   ProcessorsConfig,
   IndexConfig,
   SearchIndexConfig,
-  ChatConfig,
+  AgentUIConfig,
 } from '../../common';
 import { getInitialValue } from './config_to_form_utils';
 
@@ -35,11 +35,11 @@ export function formikToUiConfig(
     updatedConfig.search
   ) as SearchConfig;
 
-  if (existingConfig.chat !== undefined) {
-    updatedConfig['chat'] = formikToChatUiConfig(
-      formValues.chat,
-      updatedConfig.chat
-    ) as ChatConfig;
+  if (existingConfig.agent !== undefined) {
+    updatedConfig['agent'] = formikToAgentUiConfig(
+      formValues.agent,
+      updatedConfig.agent
+    ) as AgentUIConfig;
   }
 
   return {
@@ -144,10 +144,10 @@ function formikToProcessorsUiConfig(
   return existingConfig;
 }
 
-function formikToChatUiConfig(
-  chatFormValues: FormikValues,
-  existingConfig: ChatConfig
-): ChatConfig {
-  existingConfig['llm'].value = chatFormValues['llm'];
+function formikToAgentUiConfig(
+  agentFormValues: FormikValues,
+  existingConfig: AgentUIConfig
+): AgentUIConfig {
+  existingConfig['llm'].value = agentFormValues['llm'];
   return existingConfig;
 }
