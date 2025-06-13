@@ -60,7 +60,7 @@ import {
   ML_REMOTE_MODEL_LINK,
   MODEL_CATEGORY,
   isRAGUseCase,
-  isChatUseCase,
+  isAgentUseCase,
 } from '../../../../common';
 import { APP_PATH, getInitialValue } from '../../../utils';
 import { AppState, createWorkflow, useAppDispatch } from '../../../store';
@@ -142,7 +142,7 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
     // If not custom/blank, we will have more req'd form fields for the users to supply
     if (workflowType !== WORKFLOW_TYPE.CUSTOM) {
       // if a RAG workflow, require an LLM
-      if (isRAGUseCase(workflowType) || isChatUseCase(workflowType)) {
+      if (isRAGUseCase(workflowType) || isAgentUseCase(workflowType)) {
         tempFormValues = {
           ...tempFormValues,
           llm: getInitialValue('model'),
@@ -159,7 +159,7 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
           }),
         };
       }
-      if (!isChatUseCase(workflowType)) {
+      if (!isAgentUseCase(workflowType)) {
         tempFormValues = {
           ...tempFormValues,
           embeddingModel: getInitialValue('model'),
@@ -300,7 +300,7 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
                     </EuiFlexItem>
                   )}
                 {(isRAGUseCase(props.workflow?.ui_metadata?.type) ||
-                  isChatUseCase(props.workflow?.ui_metadata?.type)) && (
+                  isAgentUseCase(props.workflow?.ui_metadata?.type)) && (
                   <EuiFlexItem>
                     <ModelField
                       modelCategory={MODEL_CATEGORY.LLM}
@@ -325,7 +325,7 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
                   </EuiFlexItem>
                 )}
                 {props.workflow?.ui_metadata?.type !== WORKFLOW_TYPE.CUSTOM &&
-                  !isChatUseCase(props.workflow?.ui_metadata?.type) &&
+                  !isAgentUseCase(props.workflow?.ui_metadata?.type) &&
                   !isEmpty(deployedModels) && (
                     <EuiFlexItem>
                       <>
@@ -392,7 +392,7 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
                   )}
               </EuiFlexGroup>
               {props.workflow?.ui_metadata?.type !== WORKFLOW_TYPE.CUSTOM &&
-                !isChatUseCase(props.workflow?.ui_metadata?.type) && (
+                !isAgentUseCase(props.workflow?.ui_metadata?.type) && (
                   <>
                     <EuiSpacer size="m" />
                     <QuickConfigureOptionalFields
@@ -542,7 +542,7 @@ function injectQuickConfigureFields(
         break;
       }
       case WORKFLOW_TYPE.COMPLEX_CHATBOT: {
-        workflow.ui_metadata.config.chat.llm.value.id =
+        workflow.ui_metadata.config.agent.llm.value.id =
           quickConfigureFields?.llmId;
         break;
       }

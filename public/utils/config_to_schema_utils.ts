@@ -24,7 +24,7 @@ import {
   MAX_BYTES,
   INDEX_NAME_REGEXP,
   Index,
-  ChatConfig,
+  AgentUIConfig,
 } from '../../common';
 
 /*
@@ -38,8 +38,8 @@ export function uiConfigToSchema(
   const schemaObj = {} as WorkflowSchemaObj;
   schemaObj['ingest'] = ingestConfigToSchema(config.ingest, indices);
   schemaObj['search'] = searchConfigToSchema(config.search);
-  if (config.chat !== undefined) {
-    schemaObj['chat'] = chatConfigToSchema(config.chat);
+  if (config.agent !== undefined) {
+    schemaObj['agent'] = agentUIConfigToSchema(config.agent);
   }
   return yup.object(schemaObj) as WorkflowSchema;
 }
@@ -139,9 +139,9 @@ function processorsConfigToSchema(processorsConfig: ProcessorsConfig): Schema {
   return yup.object(processorsSchemaObj);
 }
 
-function chatConfigToSchema(chatConfig: ChatConfig): Schema {
+function agentUIConfigToSchema(agentUIConfig: AgentUIConfig): Schema {
   const chatSchemaObj = {} as { [key: string]: Schema };
-  chatSchemaObj['llm'] = getFieldSchema(chatConfig.llm);
+  chatSchemaObj['llm'] = getFieldSchema(agentUIConfig.llm);
 
   return yup.object(chatSchemaObj);
 }

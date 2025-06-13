@@ -30,7 +30,7 @@ import {
   HYBRID_SEARCH_QUERY_MATCH_NEURAL,
   MATCH_QUERY_TEXT,
   NEURAL_SPARSE_SEARCH_QUERY,
-  ChatConfig,
+  AgentUIConfig,
 } from '../../../../common';
 import { generateId } from '../../../utils';
 import semver from 'semver';
@@ -328,11 +328,11 @@ export function fetchHybridSearchWithRAGMetadata(version: string): UIState {
 export function fetchComplexChatbotMetadata(): UIState {
   let baseState = fetchEmptyMetadata();
   baseState.type = WORKFLOW_TYPE.COMPLEX_CHATBOT;
-  baseState.config.chat = fetchDefaultChatUIConfig();
+  baseState.config.agent = fetchDefaultAgentUIConfig();
   return baseState;
 }
 
-function fetchDefaultChatUIConfig() {
+function fetchDefaultAgentUIConfig() {
   return {
     llm: {
       id: 'llm',
@@ -343,7 +343,7 @@ function fetchDefaultChatUIConfig() {
     },
     mcpConnectorIds: [],
     tools: [],
-  } as ChatConfig;
+  } as AgentUIConfig;
 }
 
 // populate the `query_template` config value with a given query template
