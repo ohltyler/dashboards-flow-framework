@@ -96,6 +96,11 @@ export function AgentInputs(props: AgentInputsProps) {
             </EuiTitle>
           </EuiFlexItem>
         </EuiFlexGroup>
+        <EuiFlexItem>
+          <EuiHorizontalRule
+            style={{ marginTop: '8px', marginBottom: '8px' }}
+          />
+        </EuiFlexItem>
       </EuiFlexItem>
       <EuiFlexGroup
         direction="column"
@@ -113,14 +118,13 @@ export function AgentInputs(props: AgentInputsProps) {
             ) : (
               <EuiFlexGroup
                 direction="column"
-                justifyContent="spaceBetween"
-                gutterSize="none"
+                gutterSize="s"
                 style={{
                   height: '100%',
                   gap: '4px',
                 }}
               >
-                <EuiFlexItem grow={false}>
+                {/* <EuiFlexItem grow={false}>
                   <EuiCompressedFormRow label="Name">
                     <EuiFieldText
                       disabled={false}
@@ -147,14 +151,9 @@ export function AgentInputs(props: AgentInputsProps) {
                       }}
                     />
                   </EuiCompressedFormRow>
-                </EuiFlexItem>
+                </EuiFlexItem> */}
                 <EuiFlexItem grow={false}>
-                  <EuiCompressedFormRow label="Large language model">
-                    <ModelField
-                      fieldPath="agent.llm"
-                      hasModelInterface={true}
-                    />
-                  </EuiCompressedFormRow>
+                  <ModelField fieldPath="agent.llm" hasModelInterface={true} />
                 </EuiFlexItem>
                 <EuiFlexItem grow={false}>
                   <ToolsInputs />
@@ -174,7 +173,7 @@ export function AgentInputs(props: AgentInputsProps) {
                 gutterSize="s"
                 style={{
                   padding: '0px',
-                  marginBottom: USE_NEW_HOME_PAGE ? '0px' : '36px',
+                  marginBottom: USE_NEW_HOME_PAGE ? '0px' : '48px',
                 }}
               >
                 <EuiFlexItem grow={false}>

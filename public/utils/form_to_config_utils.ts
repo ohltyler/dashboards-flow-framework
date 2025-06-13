@@ -35,7 +35,7 @@ export function formikToUiConfig(
     updatedConfig.search
   ) as SearchConfig;
 
-  if (existingConfig.agent !== undefined) {
+  if (existingConfig.agent !== undefined && updatedConfig.agent !== undefined) {
     updatedConfig['agent'] = formikToAgentUiConfig(
       formValues.agent,
       updatedConfig.agent
@@ -149,5 +149,6 @@ function formikToAgentUiConfig(
   existingConfig: AgentUIConfig
 ): AgentUIConfig {
   existingConfig['llm'].value = agentFormValues['llm'];
+  existingConfig['tools'] = agentFormValues['tools'];
   return existingConfig;
 }

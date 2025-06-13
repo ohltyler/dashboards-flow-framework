@@ -129,6 +129,7 @@ function agentConfigToFormik(agentUIConfig: AgentUIConfig): FormikValues {
   let formValues = {} as FormikValues;
   formValues['llm'] =
     agentUIConfig.llm.value || getInitialValue(agentUIConfig.llm.type);
+  formValues['tools'] = agentUIConfig.tools || [];
   return formValues;
 }
 

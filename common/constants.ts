@@ -178,7 +178,7 @@ export const NEURAL_SPARSE_CONFIGS = {
     dimension: 30522,
     fieldName: 'passage_embedding',
   } as RemoteEmbeddingModelConfig,
-    [`opensearch-neural-sparse-encoding-doc-v3-distill`]: {
+  [`opensearch-neural-sparse-encoding-doc-v3-distill`]: {
     dimension: 30522,
     fieldName: 'passage_embedding',
   } as RemoteEmbeddingModelConfig,
@@ -241,6 +241,18 @@ export enum PROCESSOR_TYPE {
   TEXT_IMAGE_EMBEDDING = 'text_image_embedding',
   COPY = 'copy',
 }
+
+// Full list at https://docs.opensearch.org/docs/latest/ml-commons-plugin/agents-tools/tools/index/
+export enum TOOL_TYPE {
+  INDEX_MAPPING = 'IndexMappingTool',
+  LIST_INDEX = 'ListIndexTool',
+  SEARCH_INDEX = 'SearchIndexTool',
+}
+export const TOOL_DESCRIPTIONS = {
+  [TOOL_TYPE.INDEX_MAPPING]: 'Get index mappings.',
+  [TOOL_TYPE.LIST_INDEX]: 'List indices in the cluster.',
+  [TOOL_TYPE.SEARCH_INDEX]: 'Search an index.',
+};
 
 export enum MODEL_TYPE {
   TEXT_EMBEDDING = 'text_embedding',

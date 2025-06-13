@@ -9,6 +9,7 @@ import { ObjectSchema } from 'yup';
 import {
   COMPONENT_CLASS,
   PROCESSOR_TYPE,
+  TOOL_TYPE,
   TRANSFORM_TYPE,
   WORKFLOW_TYPE,
 } from './constants';
@@ -91,7 +92,7 @@ export type SearchConfig = {
 };
 
 export type ToolConfig = {
-  type: string;
+  type: TOOL_TYPE;
   name?: string;
   description?: string;
   alias?: string;
@@ -582,6 +583,7 @@ export enum WORKFLOW_STEP_TYPE {
   CREATE_SEARCH_PIPELINE_STEP_TYPE = 'create_search_pipeline',
   CREATE_INDEX_STEP_TYPE = 'create_index',
   REGISTER_AGENT_STEP_TYPE = 'register_agent',
+  CREATE_TOOL_STEP_TYPE = 'create_tool',
 }
 
 // We cannot disambiguate ingest vs. search pipelines based on workflow resource type. To work around

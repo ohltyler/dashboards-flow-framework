@@ -4,7 +4,7 @@
  */
 
 import { FormikValues } from 'formik';
-import { get, isEmpty } from 'lodash';
+import { get, isEmpty, snakeCase } from 'lodash';
 import {
   TemplateFlows,
   TemplateNode,
@@ -50,6 +50,8 @@ import { sanitizeJSONPath } from './utils';
  **************** Config -> template utils **********************
  */
 
+const AGENT_TEMPLATE_NODE_ID = 'agent';
+
 export function configToTemplateFlows(
   config: WorkflowConfig,
   includeIngest: boolean = true,
@@ -86,6 +88,7 @@ function configToProvisionTemplateFlow(
   }
   if (config.agent !== undefined) {
     nodes.push(...agentUIConfigToTemplateNodes(config.agent));
+    edges.push(...agentUIConfigToTemplateEdges(config.agent));
   }
 
   const createIngestPipelineNode = nodes.find(
@@ -556,6 +559,7 @@ function indexConfigToTemplateNode(
 export function agentUIConfigToTemplateNodes(
   agentUIConfig: AgentUIConfig
 ): TemplateNode[] {
+  const toolNodes = toolsConfigToTemplateNodes(agentUIConfig.tools);
   const agentConfig = {
     name: 'default_agent',
     // TODO: change back to plan-execute-reflect after updating local backend
@@ -574,35 +578,42 @@ export function agentUIConfigToTemplateNodes(
   } as AgentConfig;
 
   const registerAgentNode = {
-    id: 'chat_agent',
+    id: AGENT_TEMPLATE_NODE_ID,
     type: WORKFLOW_STEP_TYPE.REGISTER_AGENT_STEP_TYPE,
-    previous_node_inputs: {
-      list_index_tool: 'tools',
-    },
+    previous_node_inputs: toolNodes.reduce((tools, tool) => {
+      // @ts-ignore
+      tools[tool.id] = 'tools';
+      return tools;
+    }, {}),
     user_inputs: agentConfig,
   } as TemplateNode;
-
-  // TODO: support creating tool nodes
-  const toolNodes = toolsConfigToTemplateNodes(agentUIConfig.tools);
 
   return [...toolNodes, registerAgentNode];
 }
 
-// TODO: implement this
 function toolsConfigToTemplateNodes(toolsConfig: ToolsConfig): TemplateNode[] {
-  return [
-    {
-      id: 'list_index_tool',
-      type: 'create_tool',
+  return toolsConfig.map((toolConfig) => {
+    return {
+      id: snakeCase(toolConfig.type),
+      type: WORKFLOW_STEP_TYPE.CREATE_TOOL_STEP_TYPE,
       user_inputs: {
-        type: 'ListIndexTool',
-        name: 'DemoListIndexTool',
-        parameters: {
-          input: '${parameters.question}',
-        },
+        type: toolConfig.type,
       },
-    },
-  ];
+    };
+  });
+}
+
+function agentUIConfigToTemplateEdges(
+  agentUIConfig: AgentUIConfig
+): TemplateEdge[] {
+  return toolsConfigToTemplateNodes(agentUIConfig.tools).map(
+    (toolTemplateNode: TemplateNode) => {
+      return {
+        source: toolTemplateNode.id,
+        dest: AGENT_TEMPLATE_NODE_ID,
+      } as TemplateEdge;
+    }
+  );
 }
 
 // Helper fn to remove state-related fields from a workflow and have a stateless template
