@@ -32,6 +32,7 @@ import {
   REGISTER_AGENT_NODE_API_PATH,
   EXECUTE_AGENT_NODE_API_PATH,
   BASE_TASK_NODE_API_PATH,
+  BASE_AGENT_NODE_API_PATH,
 } from '../common';
 
 /**
@@ -144,6 +145,10 @@ export interface RouteService {
     dataSourceId?: string
   ) => Promise<any | HttpFetchError>;
   getTask: (
+    taskId: string,
+    dataSourceId?: string
+  ) => Promise<any | HttpFetchError>;
+  getAgent: (
     agentId: string,
     dataSourceId?: string
   ) => Promise<any | HttpFetchError>;
@@ -493,6 +498,17 @@ export function configureRoutes(core: CoreStart): RouteService {
         const url = dataSourceId
           ? `${BASE_NODE_API_PATH}/${dataSourceId}/task/${taskId}`
           : `${BASE_TASK_NODE_API_PATH}/${taskId}`;
+        const response = await core.http.get<{ respString: string }>(url);
+        return response;
+      } catch (e: any) {
+        return e as HttpFetchError;
+      }
+    },
+    getAgent: async (agentId: string, dataSourceId?: string) => {
+      try {
+        const url = dataSourceId
+          ? `${BASE_NODE_API_PATH}/${dataSourceId}/agent/${agentId}`
+          : `${BASE_AGENT_NODE_API_PATH}/${agentId}`;
         const response = await core.http.get<{ respString: string }>(url);
         return response;
       } catch (e: any) {
