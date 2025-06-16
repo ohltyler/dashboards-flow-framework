@@ -19,6 +19,9 @@ import {
   EuiHorizontalRule,
   EuiCodeBlock,
   EuiSmallButtonIcon,
+  EuiFlyout,
+  EuiFlyoutHeader,
+  EuiFlyoutBody,
 } from '@elastic/eui';
 import {
   customStringify,
@@ -43,8 +46,11 @@ export function TestAgent(props: TestAgentProps) {
   const dispatch = useAppDispatch();
   const dataSourceId = getDataSourceId();
 
-  // Fetch agent ID if set
+  const [agentFlyoutOpen, setAgentFlyoutOpen] = useState<boolean>(false);
+
+  // Fetch agent ID and agent details if set
   const [agentId, setAgentId] = useState<string>('');
+  const [agentDetails, setAgentDetails] = useState<string>('{}');
   useEffect(() => {
     const agentResource = props.workflow?.resourcesCreated?.find(
       (resource) =>
@@ -54,6 +60,15 @@ export function TestAgent(props: TestAgentProps) {
       setAgentId(agentResource?.id);
     }
   }, [props.workflow]);
+  useEffect(() => {
+    const getAgentDetails = async () => {
+      //await dispatch()
+      console.log('getting details...');
+    };
+    if (!isEmpty(agentId)) {
+      getAgentDetails();
+    }
+  }, [agentId]);
 
   const [executeInput, setExecuteInput] = useState<string>('');
   const [executeOutput, setExecuteOutput] = useState<string>('{}');
@@ -84,6 +99,18 @@ export function TestAgent(props: TestAgentProps) {
         marginRight: '0px',
       }}
     >
+      {agentFlyoutOpen && (
+        <EuiFlyout onClose={() => setAgentFlyoutOpen(false)}>
+          <EuiFlyoutHeader>
+            <EuiTitle>
+              <h2>{`Agent`}</h2>
+            </EuiTitle>
+          </EuiFlyoutHeader>
+          <EuiFlyoutBody>
+            <EuiCodeBlock>{agentDetails}</EuiCodeBlock>
+          </EuiFlyoutBody>
+        </EuiFlyout>
+      )}
       <EuiFlexItem grow={false}>
         <EuiFlexGroup direction="row" justifyContent="spaceBetween">
           <EuiFlexItem grow={false}>
@@ -91,13 +118,13 @@ export function TestAgent(props: TestAgentProps) {
               <h3>Test</h3>
             </EuiTitle>
           </EuiFlexItem>
-          <EuiFlexItem grow={false}>
+          <EuiFlexItem grow={false} style={{ marginTop: '16px' }}>
             <EuiSmallButtonEmpty
               onClick={() => {
-                console.log('view agent resources here...');
+                setAgentFlyoutOpen(true);
               }}
             >
-              View resources
+              View agent details
             </EuiSmallButtonEmpty>
           </EuiFlexItem>
         </EuiFlexGroup>
@@ -107,7 +134,7 @@ export function TestAgent(props: TestAgentProps) {
           />
         </EuiFlexItem>
       </EuiFlexItem>
-      <EuiFlexGroup direction="column" gutterSize="s">
+      <EuiFlexGroup direction="column" gutterSize="xs">
         {hasResources && (
           <EuiFlexItem grow={5}>
             <EuiFlexGroup direction="column">
@@ -125,7 +152,7 @@ export function TestAgent(props: TestAgentProps) {
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
                 <EuiFlexGroup direction="row">
-                  <EuiFlexItem grow={false}>
+                  <EuiFlexItem grow={false} style={{ marginTop: '0px' }}>
                     <EuiSmallButton
                       fill={false}
                       disabled={
@@ -172,7 +199,7 @@ export function TestAgent(props: TestAgentProps) {
               {!isEmpty(taskId) && (
                 <EuiFlexItem grow={false}>
                   <EuiText size="xs" color="subdued">
-                    {`Task created. Task ID: ${taskId}`}
+                    {`Task created with ID: ${taskId}`}
                   </EuiText>
                 </EuiFlexItem>
               )}
@@ -223,18 +250,6 @@ export function TestAgent(props: TestAgentProps) {
             </EuiFlexGroup>
           </EuiFlexItem>
         )}
-        {/* <EuiFlexItem grow={5}>
-          {hasResources && (
-            <EuiFlexItem grow={false}>
-              <EuiTitle size="s">
-                <h3>Resources</h3>
-              </EuiTitle>
-            </EuiFlexItem>
-          )}
-          <EuiFlexItem>
-            <Resources hasResources={hasResources} workflow={props.workflow} />
-          </EuiFlexItem>
-        </EuiFlexItem> */}
       </EuiFlexGroup>
     </EuiPanel>
   );
