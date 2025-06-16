@@ -142,7 +142,7 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
     // If not custom/blank, we will have more req'd form fields for the users to supply
     if (workflowType !== WORKFLOW_TYPE.CUSTOM) {
       // if a RAG workflow, require an LLM
-      if (isRAGUseCase(workflowType) || isAgentUseCase(workflowType)) {
+      if (isRAGUseCase(workflowType)) {
         tempFormValues = {
           ...tempFormValues,
           llm: getInitialValue('model'),
@@ -273,6 +273,8 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
                   />
                 </EuiFlexItem>
                 {props.workflow?.ui_metadata?.type !== WORKFLOW_TYPE.CUSTOM &&
+                  props.workflow?.ui_metadata?.type !==
+                    WORKFLOW_TYPE.COMPLEX_CHATBOT &&
                   isEmpty(deployedModels) && (
                     <EuiFlexItem>
                       <EuiCallOut
@@ -295,8 +297,7 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
                       />
                     </EuiFlexItem>
                   )}
-                {(isRAGUseCase(props.workflow?.ui_metadata?.type) ||
-                  isAgentUseCase(props.workflow?.ui_metadata?.type)) && (
+                {isRAGUseCase(props.workflow?.ui_metadata?.type) && (
                   <EuiFlexItem>
                     <ModelField
                       modelCategory={MODEL_CATEGORY.LLM}
@@ -537,11 +538,7 @@ function injectQuickConfigureFields(
         }
         break;
       }
-      case WORKFLOW_TYPE.COMPLEX_CHATBOT: {
-        workflow.ui_metadata.config.agent.llm.value.id =
-          quickConfigureFields?.llmId;
-        break;
-      }
+      case WORKFLOW_TYPE.COMPLEX_CHATBOT:
       case WORKFLOW_TYPE.CUSTOM:
       case undefined:
       default:
