@@ -14,6 +14,7 @@ import { Workflow } from '../../../../../common';
 import { ResourceListWithFlyout } from './resource_list_with_flyout';
 
 interface ResourcesProps {
+  hasResources: boolean;
   workflow?: Workflow;
 }
 
@@ -24,8 +25,7 @@ interface ResourcesProps {
 export function Resources(props: ResourcesProps) {
   return (
     <>
-      {props.workflow?.resourcesCreated &&
-      props.workflow.resourcesCreated.length > 0 ? (
+      {props.hasResources ? (
         <>
           <EuiFlexGroup direction="row">
             <EuiFlexItem>
@@ -40,7 +40,7 @@ export function Resources(props: ResourcesProps) {
           body={
             <>
               <EuiText size="s">
-                Run the pipeline to generate resources.
+                Configure and create your workflow to start testing.
               </EuiText>
             </>
           }
