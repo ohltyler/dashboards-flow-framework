@@ -14,20 +14,25 @@ import {
   EuiCodeEditor,
   EuiCallOut,
   EuiPanel,
+  EuiText,
+  EuiSmallButtonEmpty,
+  EuiLoadingSpinner,
 } from '@elastic/eui';
 import {
   customStringify,
+  TASK_STATE,
   Workflow,
   WORKFLOW_STEP_TYPE,
   WorkflowConfig,
 } from '../../../../../common';
-import { executeAgent, useAppDispatch } from '../../../../store';
+import { executeAgent, getTask, useAppDispatch } from '../../../../store';
 import { getDataSourceId } from '../../../../utils';
 import { Resources } from '../../tools/resources';
 
 // styling
 import '../../workspace/workspace-styles.scss';
 import '../../../../global-styles.scss';
+import { getIn } from 'formik';
 
 interface TestAgentProps {
   workflow: Workflow;
@@ -55,10 +60,19 @@ export function TestAgent(props: TestAgentProps) {
   );
   const [executeOutput, setExecuteOutput] = useState<string>('{}');
   const [executeError, setExecuteError] = useState<string>('');
+  const [taskError, setTaskError] = useState<string>('');
+  const [taskId, setTaskId] = useState<string>('');
   const hasResources =
     (props.workflow?.resourcesCreated &&
       props.workflow.resourcesCreated.length > 0) ??
     false;
+  const [taskResponse, setTaskResponse] = useState<any>(undefined);
+  const taskState = taskResponse?.state as TASK_STATE | undefined;
+  const taskInProgress = !isEmpty(taskId) && taskState !== TASK_STATE.COMPLETED;
+
+  useEffect(() => {
+    setExecuteOutput(getModelResponseFromTask(taskResponse));
+  }, [taskResponse]);
 
   return (
     <EuiPanel
@@ -125,7 +139,11 @@ export function TestAgent(props: TestAgentProps) {
                   <EuiFlexItem grow={false}>
                     <EuiSmallButton
                       fill={false}
-                      disabled={isEmpty(agentId) || isEmpty(executeInput)}
+                      disabled={
+                        isEmpty(agentId) ||
+                        isEmpty(executeInput) ||
+                        taskInProgress
+                      }
                       onClick={async () => {
                         await dispatch(
                           executeAgent({
@@ -136,7 +154,7 @@ export function TestAgent(props: TestAgentProps) {
                         )
                           .unwrap()
                           .then((resp) => {
-                            console.log('execute response: ', resp);
+                            setTaskId(resp?.task_id || '');
                             setExecuteError('');
                           })
                           .catch((err) => {
@@ -161,29 +179,72 @@ export function TestAgent(props: TestAgentProps) {
               )}
               <EuiFlexItem>
                 <EuiCompressedFormRow label="Output" fullWidth={true}>
-                  <EuiCodeEditor
-                    mode="json"
-                    theme="textmate"
-                    width="100%"
-                    height={'15vh'}
-                    value={executeOutput}
-                    // onChange={(output) => {
-                    //   setExecuteInput(input);
-                    // }}
-                    isReadOnly={true}
-                    readOnly={false}
-                    setOptions={{
-                      fontSize: '14px',
-                      useWorker: true,
-                      highlightActiveLine: false,
-                      highlightSelectedWord: false,
-                      highlightGutterLine: false,
-                      wrap: true,
-                    }}
-                    aria-label="Exeute agent output"
-                    tabSize={2}
-                  />
+                  <>
+                    {!isEmpty(taskId) && (
+                      <EuiText size="xs" color="subdued">
+                        <i>{`Task created. ID: ${taskId}`}</i>
+                      </EuiText>
+                    )}
+                    {taskInProgress && (
+                      <EuiSmallButtonEmpty
+                        iconType="refresh"
+                        iconSide="right"
+                        style={{ marginLeft: '-8px', marginBottom: '12px' }}
+                        onClick={async () => {
+                          await dispatch(
+                            getTask({
+                              taskId,
+                              dataSourceId,
+                            })
+                          )
+                            .unwrap()
+                            .then((resp) => {
+                              setTaskResponse(resp);
+                              setTaskError('');
+                            })
+                            .catch((err) => {
+                              setTaskError(err);
+                            });
+                        }}
+                      >
+                        Refresh
+                      </EuiSmallButtonEmpty>
+                    )}
+                    {!taskInProgress && (
+                      <EuiCodeEditor
+                        mode="json"
+                        theme="textmate"
+                        width="100%"
+                        height={'15vh'}
+                        value={executeOutput}
+                        isReadOnly={true}
+                        readOnly={true}
+                        setOptions={{
+                          fontSize: '14px',
+                          useWorker: true,
+                          highlightActiveLine: false,
+                          highlightSelectedWord: false,
+                          highlightGutterLine: false,
+                          wrap: true,
+                        }}
+                        aria-label="Execute agent output"
+                        tabSize={2}
+                      />
+                    )}
+                  </>
                 </EuiCompressedFormRow>
+                {taskInProgress && (
+                  <>
+                    <EuiFlexGroup direction="row">
+                      <EuiFlexItem grow={false}>
+                        <EuiText size="s">Agent is executing...</EuiText>
+                      </EuiFlexItem>
+                      <EuiFlexItem grow={false}>
+                        <EuiLoadingSpinner size="m" />
+                      </EuiFlexItem>
+                    </EuiFlexGroup>
+                  </>
+                )}
               </EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>
@@ -203,4 +264,16 @@ export function TestAgent(props: TestAgentProps) {
       </EuiFlexGroup>
     </EuiPanel>
   );
+}
+
+function getModelResponseFromTask(taskResponse: any): string {
+  const taskResults = getIn(
+    taskResponse,
+    'response.inference_results.0.output',
+    []
+  ) as [];
+  const modelResult = taskResults.find(
+    (result: any) => result.name === 'response'
+  ) as any;
+  return getIn(modelResult, 'dataAsMap.response', '') as string;
 }

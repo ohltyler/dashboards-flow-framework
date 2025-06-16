@@ -563,6 +563,12 @@ export enum WORKFLOW_STATE {
   COMPLETED = 'Completed',
 }
 
+export enum TASK_STATE {
+  CREATED = 'CREATED',
+  COMPLETED = 'COMPLETED',
+  FAILURE = 'FAILURE',
+}
+
 export type WorkflowResource = {
   id: string;
   stepType: WORKFLOW_STEP_TYPE;

@@ -18,6 +18,7 @@ import {
   SEARCH_CONNECTORS_NODE_API_PATH,
   REGISTER_AGENT_NODE_API_PATH,
   EXECUTE_AGENT_NODE_API_PATH,
+  BASE_TASK_NODE_API_PATH,
 } from '../../common';
 import {
   generateCustomError,
@@ -122,6 +123,29 @@ export function registerMLRoutes(
     },
     mlRoutesService.executeAgent
   );
+  router.get(
+    {
+      path: `${BASE_TASK_NODE_API_PATH}/{task_id}`,
+      validate: {
+        params: schema.object({
+          task_id: schema.string(),
+        }),
+      },
+    },
+    mlRoutesService.getTask
+  );
+  router.get(
+    {
+      path: `${BASE_NODE_API_PATH}/{data_source_id}/task/{task_id}`,
+      validate: {
+        params: schema.object({
+          data_source_id: schema.string(),
+          task_id: schema.string(),
+        }),
+      },
+    },
+    mlRoutesService.getTask
+  );
 }
 
 export class MLRoutesService {
@@ -217,6 +241,8 @@ export class MLRoutesService {
     }
   };
 
+  // Defaults to running async due to long-running nature of complex tasks.
+  // If non-async support wanted in the future, can add a param or standalone fn.
   executeAgent = async (
     context: RequestHandlerContext,
     req: OpenSearchDashboardsRequest,
@@ -235,9 +261,35 @@ export class MLRoutesService {
         data_source_id,
         this.client
       );
-      const resp = await callWithRequest('mlClient.executeAgent', {
+      const resp = await callWithRequest('mlClient.executeAgentAsync', {
         agent_id,
         body,
+      });
+      return res.ok({ body: resp });
+    } catch (err: any) {
+      return generateCustomError(res, err);
+    }
+  };
+
+  getTask = async (
+    context: RequestHandlerContext,
+    req: OpenSearchDashboardsRequest,
+    res: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<any>> => {
+    try {
+      const { task_id } = req.params as {
+        task_id: string;
+      };
+      const { data_source_id = '' } = req.params as { data_source_id?: string };
+      const callWithRequest = getClientBasedOnDataSource(
+        context,
+        this.dataSourceEnabled,
+        req,
+        data_source_id,
+        this.client
+      );
+      const resp = await callWithRequest('mlClient.getTask', {
+        task_id,
       });
       return res.ok({ body: resp });
     } catch (err: any) {
