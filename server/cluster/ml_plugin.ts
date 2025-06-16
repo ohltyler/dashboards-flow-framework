@@ -74,4 +74,18 @@ export function mlPlugin(Client: any, config: any, components: any) {
     needBody: false,
     method: 'GET',
   });
+
+  mlClient.getAgent = ca({
+    url: {
+      fmt: `${ML_AGENT_ROUTE_PREFIX}/<%=agent_id%>`,
+      req: {
+        agent_id: {
+          type: 'string',
+          required: true,
+        },
+      },
+    },
+    needBody: false,
+    method: 'GET',
+  });
 }

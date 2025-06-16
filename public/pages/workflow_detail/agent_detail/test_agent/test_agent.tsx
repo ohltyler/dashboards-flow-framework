@@ -30,7 +30,12 @@ import {
   WORKFLOW_STEP_TYPE,
   WorkflowConfig,
 } from '../../../../../common';
-import { executeAgent, getTask, useAppDispatch } from '../../../../store';
+import {
+  executeAgent,
+  getAgent,
+  getTask,
+  useAppDispatch,
+} from '../../../../store';
 import { getDataSourceId } from '../../../../utils';
 
 // styling
@@ -62,8 +67,19 @@ export function TestAgent(props: TestAgentProps) {
   }, [props.workflow]);
   useEffect(() => {
     const getAgentDetails = async () => {
-      //await dispatch()
-      console.log('getting details...');
+      await dispatch(
+        getAgent({
+          agentId,
+          dataSourceId,
+        })
+      )
+        .unwrap()
+        .then((resp: {}) => {
+          if (!isEmpty(resp)) {
+            setAgentDetails(customStringify(resp));
+          }
+        })
+        .catch((err) => {});
     };
     if (!isEmpty(agentId)) {
       getAgentDetails();
@@ -118,15 +134,17 @@ export function TestAgent(props: TestAgentProps) {
               <h3>Test</h3>
             </EuiTitle>
           </EuiFlexItem>
-          <EuiFlexItem grow={false} style={{ marginTop: '16px' }}>
-            <EuiSmallButtonEmpty
-              onClick={() => {
-                setAgentFlyoutOpen(true);
-              }}
-            >
-              View agent details
-            </EuiSmallButtonEmpty>
-          </EuiFlexItem>
+          {!isEmpty(agentDetails) && (
+            <EuiFlexItem grow={false} style={{ marginTop: '16px' }}>
+              <EuiSmallButtonEmpty
+                onClick={() => {
+                  setAgentFlyoutOpen(true);
+                }}
+              >
+                View agent details
+              </EuiSmallButtonEmpty>
+            </EuiFlexItem>
+          )}
         </EuiFlexGroup>
         <EuiFlexItem>
           <EuiHorizontalRule
