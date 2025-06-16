@@ -8,6 +8,7 @@ import {
   ML_REGISTER_AGENT_ROUTE,
   ML_SEARCH_CONNECTORS_ROUTE,
   ML_SEARCH_MODELS_ROUTE,
+  ML_TASKS_ROUTE_PREFIX,
 } from '../../common';
 
 /**
@@ -46,9 +47,9 @@ export function mlPlugin(Client: any, config: any, components: any) {
     method: 'POST',
   });
 
-  mlClient.executeAgent = ca({
+  mlClient.executeAgentAsync = ca({
     url: {
-      fmt: `${ML_AGENT_ROUTE_PREFIX}/<%=agent_id%>/_execute`,
+      fmt: `${ML_AGENT_ROUTE_PREFIX}/<%=agent_id%>/_execute?async=true`,
       req: {
         agent_id: {
           type: 'string',
@@ -58,5 +59,19 @@ export function mlPlugin(Client: any, config: any, components: any) {
     },
     needBody: true,
     method: 'POST',
+  });
+
+  mlClient.getTask = ca({
+    url: {
+      fmt: `${ML_TASKS_ROUTE_PREFIX}/<%=task_id%>`,
+      req: {
+        task_id: {
+          type: 'string',
+          required: true,
+        },
+      },
+    },
+    needBody: false,
+    method: 'GET',
   });
 }

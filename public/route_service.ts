@@ -31,6 +31,7 @@ import {
   GET_INDEX_NODE_API_PATH,
   REGISTER_AGENT_NODE_API_PATH,
   EXECUTE_AGENT_NODE_API_PATH,
+  BASE_TASK_NODE_API_PATH,
 } from '../common';
 
 /**
@@ -140,6 +141,10 @@ export interface RouteService {
   executeAgent: (
     agentId: string,
     body: {},
+    dataSourceId?: string
+  ) => Promise<any | HttpFetchError>;
+  getTask: (
+    agentId: string,
     dataSourceId?: string
   ) => Promise<any | HttpFetchError>;
   simulatePipeline: (
@@ -478,6 +483,17 @@ export function configureRoutes(core: CoreStart): RouteService {
         const response = await core.http.post<{ respString: string }>(url, {
           body: JSON.stringify(body),
         });
+        return response;
+      } catch (e: any) {
+        return e as HttpFetchError;
+      }
+    },
+    getTask: async (taskId: string, dataSourceId?: string) => {
+      try {
+        const url = dataSourceId
+          ? `${BASE_NODE_API_PATH}/${dataSourceId}/task/${taskId}`
+          : `${BASE_TASK_NODE_API_PATH}/${taskId}`;
+        const response = await core.http.get<{ respString: string }>(url);
         return response;
       } catch (e: any) {
         return e as HttpFetchError;

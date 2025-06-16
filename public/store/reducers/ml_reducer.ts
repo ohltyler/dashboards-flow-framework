@@ -18,10 +18,12 @@ export const INITIAL_ML_STATE = {
 const MODELS_ACTION_PREFIX = 'models';
 const CONNECTORS_ACTION_PREFIX = 'connectors';
 const AGENTS_ACTION_PREFIX = 'agents';
+const TASKS_ACTION_PREFIX = 'tasks';
 const SEARCH_MODELS_ACTION = `${MODELS_ACTION_PREFIX}/search`;
 const SEARCH_CONNECTORS_ACTION = `${CONNECTORS_ACTION_PREFIX}/search`;
 const REGISTER_AGENT_ACTION = `${AGENTS_ACTION_PREFIX}/register`;
 const EXECUTE_AGENT_ACTION = `${AGENTS_ACTION_PREFIX}/execute`;
+const GET_TASK_ACTION = `${TASKS_ACTION_PREFIX}/get`;
 
 export const searchModels = createAsyncThunk(
   SEARCH_MODELS_ACTION,
@@ -110,6 +112,24 @@ export const executeAgent = createAsyncThunk(
   }
 );
 
+export const getTask = createAsyncThunk(
+  GET_TASK_ACTION,
+  async (
+    { taskId, dataSourceId }: { taskId: string; dataSourceId?: string },
+    { rejectWithValue }
+  ) => {
+    const response: any | HttpFetchError = await getRouteService().getTask(
+      taskId,
+      dataSourceId
+    );
+    if (response instanceof HttpFetchError) {
+      return rejectWithValue('Error getting task: ' + response.body.message);
+    } else {
+      return response;
+    }
+  }
+);
+
 const mlSlice = createSlice({
   name: 'ml',
   initialState: INITIAL_ML_STATE,
@@ -130,6 +150,10 @@ const mlSlice = createSlice({
         state.errorMessage = '';
       })
       .addCase(executeAgent.pending, (state, action) => {
+        state.loading = true;
+        state.errorMessage = '';
+      })
+      .addCase(getTask.pending, (state, action) => {
         state.loading = true;
         state.errorMessage = '';
       })
@@ -154,6 +178,10 @@ const mlSlice = createSlice({
         state.loading = false;
         state.errorMessage = '';
       })
+      .addCase(getTask.fulfilled, (state, action) => {
+        state.loading = false;
+        state.errorMessage = '';
+      })
       // Rejected states
       .addCase(searchModels.rejected, (state, action) => {
         state.errorMessage = action.payload as string;
@@ -168,6 +196,10 @@ const mlSlice = createSlice({
         state.loading = false;
       })
       .addCase(executeAgent.rejected, (state, action) => {
+        state.errorMessage = action.payload as string;
+        state.loading = false;
+      })
+      .addCase(getTask.rejected, (state, action) => {
         state.errorMessage = action.payload as string;
         state.loading = false;
       });
