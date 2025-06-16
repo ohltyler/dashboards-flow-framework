@@ -5,18 +5,20 @@
 
 import React, { useEffect, useState } from 'react';
 import { isEmpty } from 'lodash';
+import { getIn } from 'formik';
 import {
-  EuiCompressedFormRow,
   EuiFlexGroup,
   EuiFlexItem,
   EuiTitle,
   EuiSmallButton,
-  EuiCodeEditor,
   EuiCallOut,
   EuiPanel,
   EuiText,
   EuiSmallButtonEmpty,
-  EuiLoadingSpinner,
+  EuiCompressedTextArea,
+  EuiHorizontalRule,
+  EuiCodeBlock,
+  EuiSmallButtonIcon,
 } from '@elastic/eui';
 import {
   customStringify,
@@ -27,12 +29,10 @@ import {
 } from '../../../../../common';
 import { executeAgent, getTask, useAppDispatch } from '../../../../store';
 import { getDataSourceId } from '../../../../utils';
-import { Resources } from '../../tools/resources';
 
 // styling
 import '../../workspace/workspace-styles.scss';
 import '../../../../global-styles.scss';
-import { getIn } from 'formik';
 
 interface TestAgentProps {
   workflow: Workflow;
@@ -55,9 +55,7 @@ export function TestAgent(props: TestAgentProps) {
     }
   }, [props.workflow]);
 
-  const [executeInput, setExecuteInput] = useState<string>(
-    customStringify({ parameters: { question: '' } })
-  );
+  const [executeInput, setExecuteInput] = useState<string>('');
   const [executeOutput, setExecuteOutput] = useState<string>('{}');
   const [executeError, setExecuteError] = useState<string>('');
   const [taskError, setTaskError] = useState<string>('');
@@ -93,46 +91,37 @@ export function TestAgent(props: TestAgentProps) {
               <h3>Test</h3>
             </EuiTitle>
           </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiSmallButtonEmpty
+              onClick={() => {
+                console.log('view agent resources here...');
+              }}
+            >
+              View resources
+            </EuiSmallButtonEmpty>
+          </EuiFlexItem>
         </EuiFlexGroup>
+        <EuiFlexItem>
+          <EuiHorizontalRule
+            style={{ marginTop: '8px', marginBottom: '8px' }}
+          />
+        </EuiFlexItem>
       </EuiFlexItem>
-      <EuiFlexGroup direction="column">
+      <EuiFlexGroup direction="column" gutterSize="s">
         {hasResources && (
           <EuiFlexItem grow={5}>
             <EuiFlexGroup direction="column">
               <EuiFlexItem grow={false}>
-                <EuiCompressedFormRow label="Input" fullWidth={true}>
-                  <EuiCodeEditor
-                    mode="json"
-                    theme="textmate"
-                    width="100%"
-                    height={'15vh'}
-                    value={executeInput}
-                    onChange={(input) => {
-                      setExecuteInput(input);
-                    }}
-                    // format on blur
-                    onBlur={() => {
-                      try {
-                        setExecuteInput(
-                          customStringify(JSON.parse(executeInput))
-                        );
-                      } catch (error) {
-                      } finally {
-                      }
-                    }}
-                    readOnly={false}
-                    setOptions={{
-                      fontSize: '14px',
-                      useWorker: true,
-                      highlightActiveLine: true,
-                      highlightSelectedWord: true,
-                      highlightGutterLine: true,
-                      wrap: true,
-                    }}
-                    aria-label="Exeute agent input"
-                    tabSize={2}
-                  />
-                </EuiCompressedFormRow>
+                <EuiCompressedTextArea
+                  fullWidth={true}
+                  placeholder={'Ask a question'}
+                  value={executeInput}
+                  onChange={(e) => {
+                    setExecuteInput(e.target.value);
+                  }}
+                  isInvalid={false}
+                  disabled={false}
+                />
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
                 <EuiFlexGroup direction="row">
@@ -144,11 +133,14 @@ export function TestAgent(props: TestAgentProps) {
                         isEmpty(executeInput) ||
                         taskInProgress
                       }
+                      isLoading={taskInProgress}
                       onClick={async () => {
                         await dispatch(
                           executeAgent({
                             agentId,
-                            apiBody: executeInput,
+                            apiBody: customStringify({
+                              parameters: { question: executeInput },
+                            }),
                             dataSourceId,
                           })
                         )
@@ -162,7 +154,7 @@ export function TestAgent(props: TestAgentProps) {
                           });
                       }}
                     >
-                      Execute
+                      {taskInProgress ? 'Running' : 'Run'}
                     </EuiSmallButton>
                   </EuiFlexItem>
                 </EuiFlexGroup>
@@ -177,19 +169,25 @@ export function TestAgent(props: TestAgentProps) {
                   />
                 </EuiFlexItem>
               )}
-              <EuiFlexItem>
-                <EuiCompressedFormRow label="Output" fullWidth={true}>
-                  <>
-                    {!isEmpty(taskId) && (
-                      <EuiText size="xs" color="subdued">
-                        <i>{`Task created. ID: ${taskId}`}</i>
+              {!isEmpty(taskId) && (
+                <EuiFlexItem grow={false}>
+                  <EuiText size="xs" color="subdued">
+                    {`Task created. Task ID: ${taskId}`}
+                  </EuiText>
+                </EuiFlexItem>
+              )}
+              {taskInProgress && (
+                <EuiFlexItem grow={false}>
+                  <EuiFlexGroup direction="row" gutterSize="xs">
+                    <EuiFlexItem grow={false}>
+                      <EuiText size="s" color="subdued">
+                        <i>Agent is executing...</i>
                       </EuiText>
-                    )}
-                    {taskInProgress && (
-                      <EuiSmallButtonEmpty
+                    </EuiFlexItem>
+                    <EuiFlexItem grow={false}>
+                      <EuiSmallButtonIcon
                         iconType="refresh"
-                        iconSide="right"
-                        style={{ marginLeft: '-8px', marginBottom: '12px' }}
+                        style={{ marginTop: '-4px' }}
                         onClick={async () => {
                           await dispatch(
                             getTask({
@@ -206,50 +204,26 @@ export function TestAgent(props: TestAgentProps) {
                               setTaskError(err);
                             });
                         }}
-                      >
-                        Refresh
-                      </EuiSmallButtonEmpty>
-                    )}
-                    {!taskInProgress && (
-                      <EuiCodeEditor
-                        mode="json"
-                        theme="textmate"
-                        width="100%"
-                        height={'15vh'}
-                        value={executeOutput}
-                        isReadOnly={true}
-                        readOnly={true}
-                        setOptions={{
-                          fontSize: '14px',
-                          useWorker: true,
-                          highlightActiveLine: false,
-                          highlightSelectedWord: false,
-                          highlightGutterLine: false,
-                          wrap: true,
-                        }}
-                        aria-label="Execute agent output"
-                        tabSize={2}
                       />
-                    )}
-                  </>
-                </EuiCompressedFormRow>
-                {taskInProgress && (
-                  <>
-                    <EuiFlexGroup direction="row">
-                      <EuiFlexItem grow={false}>
-                        <EuiText size="s">Agent is executing...</EuiText>
-                      </EuiFlexItem>
-                      <EuiFlexItem grow={false}>
-                        <EuiLoadingSpinner size="m" />
-                      </EuiFlexItem>
-                    </EuiFlexGroup>
-                  </>
-                )}
-              </EuiFlexItem>
+                    </EuiFlexItem>
+                  </EuiFlexGroup>
+                </EuiFlexItem>
+              )}
+              {!isEmpty(executeOutput) && (
+                <EuiFlexItem grow={false}>
+                  <EuiCodeBlock
+                    fontSize="m"
+                    isCopyable={true}
+                    overflowHeight={300}
+                  >
+                    {executeOutput}
+                  </EuiCodeBlock>
+                </EuiFlexItem>
+              )}
             </EuiFlexGroup>
           </EuiFlexItem>
         )}
-        <EuiFlexItem grow={5}>
+        {/* <EuiFlexItem grow={5}>
           {hasResources && (
             <EuiFlexItem grow={false}>
               <EuiTitle size="s">
@@ -260,7 +234,7 @@ export function TestAgent(props: TestAgentProps) {
           <EuiFlexItem>
             <Resources hasResources={hasResources} workflow={props.workflow} />
           </EuiFlexItem>
-        </EuiFlexItem>
+        </EuiFlexItem> */}
       </EuiFlexGroup>
     </EuiPanel>
   );

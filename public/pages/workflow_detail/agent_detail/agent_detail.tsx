@@ -24,6 +24,10 @@ interface AgentDetailProps {
 }
 
 export function AgentDetail(props: AgentDetailProps) {
+  const hasResources =
+    (props.workflow?.resourcesCreated &&
+      props.workflow.resourcesCreated.length > 0) ??
+    false;
   return (
     <EuiPanel
       paddingSize="s"
@@ -39,12 +43,13 @@ export function AgentDetail(props: AgentDetailProps) {
           <EuiFlexItem grow={5}>
             <AgentInputs workflow={props.workflow} uiConfig={props.uiConfig} />
           </EuiFlexItem>
-          <EuiFlexItem grow={5}>
-            <TestAgent workflow={props.workflow} uiConfig={props.uiConfig} />
-          </EuiFlexItem>
+          {hasResources && (
+            <EuiFlexItem grow={5}>
+              <TestAgent workflow={props.workflow} uiConfig={props.uiConfig} />
+            </EuiFlexItem>
+          )}
         </EuiFlexGroup>
       ) : (
-        // <AgentInputs workflow={props.workflow} uiConfig={props.uiConfig} />
         <EuiLoadingSpinner size="xl" />
       )}
     </EuiPanel>
