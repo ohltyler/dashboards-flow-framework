@@ -132,6 +132,9 @@ function agentConfigToFormik(agentUIConfig: AgentUIConfig): FormikValues {
   formValues['llm'] =
     agentUIConfig.llm.value || getInitialValue(agentUIConfig.llm.type);
   formValues['tools'] = agentUIConfig.tools || [];
+  formValues['llmInterface'] =
+    agentUIConfig.llmInterface.value ||
+    getInitialValue(agentUIConfig.llmInterface.type);
   return formValues;
 }
 

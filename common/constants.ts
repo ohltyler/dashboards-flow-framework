@@ -271,6 +271,13 @@ export enum MODEL_CATEGORY {
   SPARSE_ENCODER = 'SPARSE_ENCODER',
 }
 
+// Based off of valid values listed here: https://docs.opensearch.org/docs/latest/ml-commons-plugin/api/agent-apis/register-agent/#request-body-fields
+export enum LLM_INTERFACE {
+  BEDROCK_CONVERSE_CLAUDE = 'bedrock/converse/claude',
+  BEDROCK_CONVERSE_DEEPSEEK_R1 = 'bedrock/converse/deepseek_r1',
+  OPENAI_V1_CHAT_COMPLETIONS = 'openai/v1/chat/completions',
+}
+
 /**
  * Various constants pertaining to the drag-and-drop UI components
  */

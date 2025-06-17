@@ -5,7 +5,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useFormikContext } from 'formik';
+import { isEmpty } from 'lodash';
+import { getIn, useFormikContext } from 'formik';
 import {
   EuiFlexGroup,
   EuiFlexItem,
@@ -39,6 +40,7 @@ import {
   useDataSourceVersion,
 } from '../../../../utils';
 import { ToolsInputs } from './tools_inputs';
+import { AdvancedSettingsInputs } from './advanced_settings_inputs';
 
 // styling
 import '../../workspace/workspace-styles.scss';
@@ -80,6 +82,13 @@ export function AgentInputs(props: AgentInputsProps) {
       });
     }
   }, [props.workflow]);
+
+  // TODO: derive the LLM interface based on the model, if applicable
+  useEffect(() => {
+    if (!isEmpty(getIn(values, 'agent.llm'))) {
+      // TODO
+    }
+  }, [getIn(values, 'agent.llm')]);
 
   return (
     <>
@@ -174,6 +183,9 @@ export function AgentInputs(props: AgentInputsProps) {
                     <EuiFlexItem grow={false}>
                       <ToolsInputs />
                     </EuiFlexItem>
+                    <EuiFlexItem grow={false}>
+                      <AdvancedSettingsInputs uiConfig={props.uiConfig} />
+                    </EuiFlexItem>
                   </EuiFlexGroup>
                 )}
               </>
@@ -199,6 +211,7 @@ export function AgentInputs(props: AgentInputsProps) {
                             fill={false}
                             // TODO: make this smarter. Should disable again if the generated template remains unchanged (e.g., toggling something off and back on again).
                             // Can follow what's done in LeftNave for all form-related state.
+                            // TODO: should have form validation and prevent creation if errors.
                             disabled={!dirty && agentProvisioned}
                             isLoading={isLoading}
                             onClick={async () => {
