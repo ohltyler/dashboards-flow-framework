@@ -20,6 +20,8 @@ import {
   EXECUTE_AGENT_NODE_API_PATH,
   BASE_TASK_NODE_API_PATH,
   BASE_AGENT_NODE_API_PATH,
+  GET_MESSAGES_NODE_API_PATH,
+  GET_TRACES_NODE_API_PATH,
 } from '../../common';
 import {
   generateCustomError,
@@ -169,6 +171,52 @@ export function registerMLRoutes(
       },
     },
     mlRoutesService.getAgent
+  );
+  router.get(
+    {
+      path: `${GET_MESSAGES_NODE_API_PATH}/{memory_id}`,
+      validate: {
+        params: schema.object({
+          memory_id: schema.string(),
+        }),
+      },
+    },
+    mlRoutesService.getMessages
+  );
+  router.get(
+    {
+      path: `${BASE_NODE_API_PATH}/{data_source_id}/memory/messages/{memory_id}`,
+      validate: {
+        params: schema.object({
+          data_source_id: schema.string(),
+          memory_id: schema.string(),
+        }),
+      },
+    },
+    mlRoutesService.getMessages
+  );
+  router.get(
+    {
+      path: `${GET_TRACES_NODE_API_PATH}/{message_id}`,
+      validate: {
+        params: schema.object({
+          message_id: schema.string(),
+        }),
+      },
+    },
+    mlRoutesService.getTraces
+  );
+  router.get(
+    {
+      path: `${BASE_NODE_API_PATH}/{data_source_id}/memory/messages/traces/{message_id}`,
+      validate: {
+        params: schema.object({
+          data_source_id: schema.string(),
+          message_id: schema.string(),
+        }),
+      },
+    },
+    mlRoutesService.getTraces
   );
 }
 
@@ -340,6 +388,58 @@ export class MLRoutesService {
       );
       const resp = await callWithRequest('mlClient.getAgent', {
         agent_id,
+      });
+      return res.ok({ body: resp });
+    } catch (err: any) {
+      return generateCustomError(res, err);
+    }
+  };
+
+  getMessages = async (
+    context: RequestHandlerContext,
+    req: OpenSearchDashboardsRequest,
+    res: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<any>> => {
+    try {
+      const { memory_id } = req.params as {
+        memory_id: string;
+      };
+      const { data_source_id = '' } = req.params as { data_source_id?: string };
+      const callWithRequest = getClientBasedOnDataSource(
+        context,
+        this.dataSourceEnabled,
+        req,
+        data_source_id,
+        this.client
+      );
+      const resp = await callWithRequest('mlClient.getMessages', {
+        memory_id,
+      });
+      return res.ok({ body: resp });
+    } catch (err: any) {
+      return generateCustomError(res, err);
+    }
+  };
+
+  getTraces = async (
+    context: RequestHandlerContext,
+    req: OpenSearchDashboardsRequest,
+    res: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<any>> => {
+    try {
+      const { message_id } = req.params as {
+        message_id: string;
+      };
+      const { data_source_id = '' } = req.params as { data_source_id?: string };
+      const callWithRequest = getClientBasedOnDataSource(
+        context,
+        this.dataSourceEnabled,
+        req,
+        data_source_id,
+        this.client
+      );
+      const resp = await callWithRequest('mlClient.getTraces', {
+        message_id,
       });
       return res.ok({ body: resp });
     } catch (err: any) {

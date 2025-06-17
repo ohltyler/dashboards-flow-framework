@@ -19,12 +19,15 @@ const MODELS_ACTION_PREFIX = 'models';
 const CONNECTORS_ACTION_PREFIX = 'connectors';
 const AGENTS_ACTION_PREFIX = 'agents';
 const TASKS_ACTION_PREFIX = 'tasks';
+const MEMORY_ACTION_PREFIX = 'memory';
 const SEARCH_MODELS_ACTION = `${MODELS_ACTION_PREFIX}/search`;
 const SEARCH_CONNECTORS_ACTION = `${CONNECTORS_ACTION_PREFIX}/search`;
 const REGISTER_AGENT_ACTION = `${AGENTS_ACTION_PREFIX}/register`;
 const EXECUTE_AGENT_ACTION = `${AGENTS_ACTION_PREFIX}/execute`;
 const GET_TASK_ACTION = `${TASKS_ACTION_PREFIX}/get`;
 const GET_AGENT_ACTION = `${AGENTS_ACTION_PREFIX}/get`;
+const GET_MESSAGES_ACTION = `${MEMORY_ACTION_PREFIX}/getMessages`;
+const GET_TRACES_ACTION = `${MEMORY_ACTION_PREFIX}/getTraces`;
 
 export const searchModels = createAsyncThunk(
   SEARCH_MODELS_ACTION,
@@ -149,6 +152,44 @@ export const getAgent = createAsyncThunk(
   }
 );
 
+export const getMessages = createAsyncThunk(
+  GET_MESSAGES_ACTION,
+  async (
+    { memoryId, dataSourceId }: { memoryId: string; dataSourceId?: string },
+    { rejectWithValue }
+  ) => {
+    const response: any | HttpFetchError = await getRouteService().getMessages(
+      memoryId,
+      dataSourceId
+    );
+    if (response instanceof HttpFetchError) {
+      return rejectWithValue(
+        'Error getting messages: ' + response.body.message
+      );
+    } else {
+      return response;
+    }
+  }
+);
+
+export const getTraces = createAsyncThunk(
+  GET_TRACES_ACTION,
+  async (
+    { messageId, dataSourceId }: { messageId: string; dataSourceId?: string },
+    { rejectWithValue }
+  ) => {
+    const response: any | HttpFetchError = await getRouteService().getTraces(
+      messageId,
+      dataSourceId
+    );
+    if (response instanceof HttpFetchError) {
+      return rejectWithValue('Error getting traces: ' + response.body.message);
+    } else {
+      return response;
+    }
+  }
+);
+
 const mlSlice = createSlice({
   name: 'ml',
   initialState: INITIAL_ML_STATE,
@@ -177,6 +218,14 @@ const mlSlice = createSlice({
         state.errorMessage = '';
       })
       .addCase(getAgent.pending, (state, action) => {
+        state.loading = true;
+        state.errorMessage = '';
+      })
+      .addCase(getMessages.pending, (state, action) => {
+        state.loading = true;
+        state.errorMessage = '';
+      })
+      .addCase(getTraces.pending, (state, action) => {
         state.loading = true;
         state.errorMessage = '';
       })
@@ -209,6 +258,14 @@ const mlSlice = createSlice({
         state.loading = false;
         state.errorMessage = '';
       })
+      .addCase(getMessages.fulfilled, (state, action) => {
+        state.loading = false;
+        state.errorMessage = '';
+      })
+      .addCase(getTraces.fulfilled, (state, action) => {
+        state.loading = false;
+        state.errorMessage = '';
+      })
       // Rejected states
       .addCase(searchModels.rejected, (state, action) => {
         state.errorMessage = action.payload as string;
@@ -231,6 +288,14 @@ const mlSlice = createSlice({
         state.loading = false;
       })
       .addCase(getAgent.rejected, (state, action) => {
+        state.errorMessage = action.payload as string;
+        state.loading = false;
+      })
+      .addCase(getMessages.rejected, (state, action) => {
+        state.errorMessage = action.payload as string;
+        state.loading = false;
+      })
+      .addCase(getTraces.rejected, (state, action) => {
         state.errorMessage = action.payload as string;
         state.loading = false;
       });

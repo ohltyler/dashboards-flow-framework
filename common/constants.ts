@@ -32,6 +32,7 @@ export const ML_MODEL_ROUTE_PREFIX = `${ML_API_ROUTE_PREFIX}/models`;
 export const ML_CONNECTOR_ROUTE_PREFIX = `${ML_API_ROUTE_PREFIX}/connectors`;
 export const ML_AGENT_ROUTE_PREFIX = `${ML_API_ROUTE_PREFIX}/agents`;
 export const ML_TASKS_ROUTE_PREFIX = `${ML_API_ROUTE_PREFIX}/tasks`;
+export const ML_MEMORY_ROUTE_PREFIX = `${ML_API_ROUTE_PREFIX}/memory`;
 export const ML_SEARCH_MODELS_ROUTE = `${ML_MODEL_ROUTE_PREFIX}/_search`;
 export const ML_SEARCH_CONNECTORS_ROUTE = `${ML_CONNECTOR_ROUTE_PREFIX}/_search`;
 export const ML_REGISTER_AGENT_ROUTE = `${ML_AGENT_ROUTE_PREFIX}/_register`;
@@ -75,10 +76,13 @@ export const BASE_MODEL_NODE_API_PATH = `${BASE_NODE_API_PATH}/model`;
 export const BASE_CONNECTOR_NODE_API_PATH = `${BASE_NODE_API_PATH}/connector`;
 export const BASE_AGENT_NODE_API_PATH = `${BASE_NODE_API_PATH}/agent`;
 export const BASE_TASK_NODE_API_PATH = `${BASE_NODE_API_PATH}/task`;
+export const BASE_MEMORY_NODE_API_PATH = `${BASE_NODE_API_PATH}/memory`;
 export const SEARCH_MODELS_NODE_API_PATH = `${BASE_MODEL_NODE_API_PATH}/search`;
 export const SEARCH_CONNECTORS_NODE_API_PATH = `${BASE_CONNECTOR_NODE_API_PATH}/search`;
 export const REGISTER_AGENT_NODE_API_PATH = `${BASE_AGENT_NODE_API_PATH}/register`;
 export const EXECUTE_AGENT_NODE_API_PATH = `${BASE_AGENT_NODE_API_PATH}/execute`;
+export const GET_MESSAGES_NODE_API_PATH = `${BASE_MEMORY_NODE_API_PATH}/messages`;
+export const GET_TRACES_NODE_API_PATH = `${BASE_MEMORY_NODE_API_PATH}/messages/traces`;
 
 /**
  * Remote model dimensions. Used for attempting to pre-fill dimension size
