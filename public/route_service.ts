@@ -33,6 +33,8 @@ import {
   EXECUTE_AGENT_NODE_API_PATH,
   BASE_TASK_NODE_API_PATH,
   BASE_AGENT_NODE_API_PATH,
+  GET_MESSAGES_NODE_API_PATH,
+  GET_TRACES_NODE_API_PATH,
 } from '../common';
 
 /**
@@ -150,6 +152,14 @@ export interface RouteService {
   ) => Promise<any | HttpFetchError>;
   getAgent: (
     agentId: string,
+    dataSourceId?: string
+  ) => Promise<any | HttpFetchError>;
+  getMessages: (
+    memoryId: string,
+    dataSourceId?: string
+  ) => Promise<any | HttpFetchError>;
+  getTraces: (
+    messageId: string,
     dataSourceId?: string
   ) => Promise<any | HttpFetchError>;
   simulatePipeline: (
@@ -509,6 +519,28 @@ export function configureRoutes(core: CoreStart): RouteService {
         const url = dataSourceId
           ? `${BASE_NODE_API_PATH}/${dataSourceId}/agent/${agentId}`
           : `${BASE_AGENT_NODE_API_PATH}/${agentId}`;
+        const response = await core.http.get<{ respString: string }>(url);
+        return response;
+      } catch (e: any) {
+        return e as HttpFetchError;
+      }
+    },
+    getMessages: async (memoryId: string, dataSourceId?: string) => {
+      try {
+        const url = dataSourceId
+          ? `${BASE_NODE_API_PATH}/${dataSourceId}/memory/messages/${memoryId}`
+          : `${GET_MESSAGES_NODE_API_PATH}/${memoryId}`;
+        const response = await core.http.get<{ respString: string }>(url);
+        return response;
+      } catch (e: any) {
+        return e as HttpFetchError;
+      }
+    },
+    getTraces: async (messageId: string, dataSourceId?: string) => {
+      try {
+        const url = dataSourceId
+          ? `${BASE_NODE_API_PATH}/${dataSourceId}/memory/messages/traces/${messageId}`
+          : `${GET_TRACES_NODE_API_PATH}/${messageId}`;
         const response = await core.http.get<{ respString: string }>(url);
         return response;
       } catch (e: any) {

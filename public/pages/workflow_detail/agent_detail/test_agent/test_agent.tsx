@@ -33,7 +33,9 @@ import {
 import {
   executeAgent,
   getAgent,
+  getMessages,
   getTask,
+  getTraces,
   useAppDispatch,
 } from '../../../../store';
 import { getDataSourceId } from '../../../../utils';
@@ -55,7 +57,7 @@ export function TestAgent(props: TestAgentProps) {
 
   // Fetch agent ID and agent details if set
   const [agentId, setAgentId] = useState<string>('');
-  const [agentDetails, setAgentDetails] = useState<string>('{}');
+  const [agentDetails, setAgentDetails] = useState<{}>({});
   useEffect(() => {
     const agentResource = props.workflow?.resourcesCreated?.find(
       (resource) =>
@@ -76,7 +78,7 @@ export function TestAgent(props: TestAgentProps) {
         .unwrap()
         .then((resp: {}) => {
           if (!isEmpty(resp)) {
-            setAgentDetails(customStringify(resp));
+            setAgentDetails(resp);
           }
         })
         .catch((err) => {});
@@ -103,6 +105,58 @@ export function TestAgent(props: TestAgentProps) {
     setExecuteOutput(getModelResponseFromTask(taskResponse));
   }, [taskResponse]);
 
+  // Fetch more sub-resource details (memory, messages, traces) once available
+  const [messages, setMessages] = useState<any>([]);
+  const [traces, setTraces] = useState<any>([]);
+  useEffect(() => {
+    const getMessagesFromMemoryId = async (memoryId: string) => {
+      await dispatch(
+        getMessages({
+          memoryId,
+          dataSourceId,
+        })
+      )
+        .unwrap()
+        .then((resp: any) => {
+          if (!isEmpty(resp?.messages)) {
+            setMessages(resp.messages as []);
+          }
+        })
+        .catch((err: any) => {});
+    };
+    if (!isEmpty(taskResponse?.response?.memory_id)) {
+      getMessagesFromMemoryId(taskResponse?.response?.memory_id as string);
+    }
+  }, [taskResponse]);
+  useEffect(() => {
+    const getTracesFromMessageId = async (messageId: string) => {
+      await dispatch(
+        getTraces({
+          messageId,
+          dataSourceId,
+        })
+      )
+        .unwrap()
+        .then((resp: any) => {
+          if (!isEmpty(resp?.traces)) {
+            setTraces(resp.traces as []);
+          }
+        })
+        .catch((err: any) => {});
+    };
+    if (!isEmpty(messages)) {
+      // TODO: if multiple messages, figure out how to select the relevant one
+      // (most recent? allow multiple?)
+      const relevantMessageId = getIn(messages, '0.message_id', '') as string;
+      if (!isEmpty(relevantMessageId)) {
+        getTracesFromMessageId(relevantMessageId);
+      }
+    }
+  }, [messages]);
+
+  console.log('messages: ', messages);
+  console.log('traces: ', traces);
+
   return (
     <EuiPanel
       data-testid="leftNavPanel"
@@ -123,7 +177,7 @@ export function TestAgent(props: TestAgentProps) {
             </EuiTitle>
           </EuiFlyoutHeader>
           <EuiFlyoutBody>
-            <EuiCodeBlock>{agentDetails}</EuiCodeBlock>
+            <EuiCodeBlock>{customStringify(agentDetails)}</EuiCodeBlock>
           </EuiFlyoutBody>
         </EuiFlyout>
       )}
@@ -214,13 +268,6 @@ export function TestAgent(props: TestAgentProps) {
                   />
                 </EuiFlexItem>
               )}
-              {!isEmpty(taskId) && (
-                <EuiFlexItem grow={false}>
-                  <EuiText size="xs" color="subdued">
-                    {`Task created with ID: ${taskId}`}
-                  </EuiText>
-                </EuiFlexItem>
-              )}
               {taskInProgress && (
                 <EuiFlexItem grow={false}>
                   <EuiFlexGroup direction="row" gutterSize="xs">
@@ -263,6 +310,13 @@ export function TestAgent(props: TestAgentProps) {
                   >
                     {executeOutput}
                   </EuiCodeBlock>
+                </EuiFlexItem>
+              )}
+              {!isEmpty(taskId) && (
+                <EuiFlexItem grow={false}>
+                  <EuiText size="xs" color="subdued">
+                    {`Task created with ID: ${taskId}`}
+                  </EuiText>
                 </EuiFlexItem>
               )}
             </EuiFlexGroup>
