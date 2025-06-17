@@ -117,6 +117,18 @@ export function hasProvisionedSearchResources(
   return result;
 }
 
+export function hasProvisionedAgentResources(
+  workflow: Workflow | undefined
+): boolean {
+  let result = false;
+  workflow?.resourcesCreated?.some((resource) => {
+    if (resource.stepType === WORKFLOW_STEP_TYPE.REGISTER_AGENT_STEP_TYPE) {
+      result = true;
+    }
+  });
+  return result;
+}
+
 // returns a comma-delimited string of all resource IDs that need to be force deleted.
 // see https://github.com/opensearch-project/flow-framework/pull/763
 export function getResourcesToBeForceDeleted(
