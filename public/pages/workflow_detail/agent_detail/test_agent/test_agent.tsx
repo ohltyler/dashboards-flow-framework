@@ -54,6 +54,9 @@ export function TestAgent(props: TestAgentProps) {
   const dataSourceId = getDataSourceId();
 
   const [agentFlyoutOpen, setAgentFlyoutOpen] = useState<boolean>(false);
+  const [taskFlyoutOpen, setTaskFlyoutOpen] = useState<boolean>(false);
+  const [messagesFlyoutOpen, setMessagesFlyoutOpen] = useState<boolean>(false);
+  const [tracesFlyoutOpen, setTracesFlyoutOpen] = useState<boolean>(false);
 
   // Fetch agent ID and agent details if set
   const [agentId, setAgentId] = useState<string>('');
@@ -154,9 +157,6 @@ export function TestAgent(props: TestAgentProps) {
     }
   }, [messages]);
 
-  console.log('messages: ', messages);
-  console.log('traces: ', traces);
-
   return (
     <EuiPanel
       data-testid="leftNavPanel"
@@ -178,6 +178,42 @@ export function TestAgent(props: TestAgentProps) {
           </EuiFlyoutHeader>
           <EuiFlyoutBody>
             <EuiCodeBlock>{customStringify(agentDetails)}</EuiCodeBlock>
+          </EuiFlyoutBody>
+        </EuiFlyout>
+      )}
+      {taskFlyoutOpen && (
+        <EuiFlyout onClose={() => setTaskFlyoutOpen(false)}>
+          <EuiFlyoutHeader>
+            <EuiTitle>
+              <h2>{`Task`}</h2>
+            </EuiTitle>
+          </EuiFlyoutHeader>
+          <EuiFlyoutBody>
+            <EuiCodeBlock>{customStringify(taskResponse)}</EuiCodeBlock>
+          </EuiFlyoutBody>
+        </EuiFlyout>
+      )}
+      {messagesFlyoutOpen && (
+        <EuiFlyout onClose={() => setMessagesFlyoutOpen(false)}>
+          <EuiFlyoutHeader>
+            <EuiTitle>
+              <h2>{`Messages`}</h2>
+            </EuiTitle>
+          </EuiFlyoutHeader>
+          <EuiFlyoutBody>
+            <EuiCodeBlock>{customStringify(messages)}</EuiCodeBlock>
+          </EuiFlyoutBody>
+        </EuiFlyout>
+      )}
+      {tracesFlyoutOpen && (
+        <EuiFlyout onClose={() => setTracesFlyoutOpen(false)}>
+          <EuiFlyoutHeader>
+            <EuiTitle>
+              <h2>{`Traces`}</h2>
+            </EuiTitle>
+          </EuiFlyoutHeader>
+          <EuiFlyoutBody>
+            <EuiCodeBlock>{customStringify(traces)}</EuiCodeBlock>
           </EuiFlyoutBody>
         </EuiFlyout>
       )}
@@ -279,6 +315,7 @@ export function TestAgent(props: TestAgentProps) {
                     <EuiFlexItem grow={false}>
                       <EuiSmallButtonIcon
                         iconType="refresh"
+                        aria-label="refresh"
                         style={{ marginTop: '-4px' }}
                         onClick={async () => {
                           await dispatch(
@@ -312,11 +349,60 @@ export function TestAgent(props: TestAgentProps) {
                   </EuiCodeBlock>
                 </EuiFlexItem>
               )}
-              {!isEmpty(taskId) && (
+              {!isEmpty(taskResponse) && (
                 <EuiFlexItem grow={false}>
-                  <EuiText size="xs" color="subdued">
-                    {`Task created with ID: ${taskId}`}
-                  </EuiText>
+                  <EuiFlexGroup direction="row">
+                    <EuiFlexItem
+                      grow={false}
+                      style={{ marginLeft: '4px', marginBottom: '0px' }}
+                    >
+                      <EuiSmallButtonEmpty
+                        onClick={() => setTaskFlyoutOpen(true)}
+                      >
+                        View task details
+                      </EuiSmallButtonEmpty>
+                    </EuiFlexItem>
+                  </EuiFlexGroup>
+                </EuiFlexItem>
+              )}
+              {!isEmpty(messages) && (
+                <EuiFlexItem grow={false}>
+                  <EuiFlexGroup direction="row">
+                    <EuiFlexItem
+                      grow={false}
+                      style={{
+                        marginLeft: '4px',
+                        marginTop: '0px',
+                        marginBottom: '0px',
+                      }}
+                    >
+                      <EuiSmallButtonEmpty
+                        onClick={() => setMessagesFlyoutOpen(true)}
+                      >
+                        View messages
+                      </EuiSmallButtonEmpty>
+                    </EuiFlexItem>
+                  </EuiFlexGroup>
+                </EuiFlexItem>
+              )}
+              {!isEmpty(traces) && (
+                <EuiFlexItem grow={false}>
+                  <EuiFlexGroup direction="row">
+                    <EuiFlexItem
+                      grow={false}
+                      style={{
+                        marginLeft: '4px',
+                        marginTop: '0px',
+                        marginBottom: '0px',
+                      }}
+                    >
+                      <EuiSmallButtonEmpty
+                        onClick={() => setTracesFlyoutOpen(true)}
+                      >
+                        View traces
+                      </EuiSmallButtonEmpty>
+                    </EuiFlexItem>
+                  </EuiFlexGroup>
                 </EuiFlexItem>
               )}
             </EuiFlexGroup>
