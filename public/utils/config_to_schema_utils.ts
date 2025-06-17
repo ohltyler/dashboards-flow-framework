@@ -143,6 +143,7 @@ function agentUIConfigToSchema(agentUIConfig: AgentUIConfig): Schema {
   const agentSchemaObj = {} as { [key: string]: Schema };
   agentSchemaObj['type'] = getFieldSchema(agentUIConfig.type);
   agentSchemaObj['llm'] = getFieldSchema(agentUIConfig.llm);
+  agentSchemaObj['llmInterface'] = getFieldSchema(agentUIConfig.llmInterface);
 
   return yup.object(agentSchemaObj);
 }

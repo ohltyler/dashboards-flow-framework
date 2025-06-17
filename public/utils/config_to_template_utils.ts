@@ -621,7 +621,7 @@ function agentUIConfigToAgentConfig(
     parameters:
       agentUIConfig.type.value === AGENT_TYPE.PLAN_EXECUTE_REFLECT
         ? {
-            _llm_interface: 'bedrock/converse/claude',
+            _llm_interface: agentUIConfig.llmInterface.value,
           }
         : {},
     // TODO: support MCP connector as part of chat config

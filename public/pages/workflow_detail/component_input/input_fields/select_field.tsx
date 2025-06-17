@@ -21,6 +21,7 @@ interface SelectFieldProps {
   showInvalid?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
+  label?: string;
 }
 
 /**
@@ -39,7 +40,7 @@ export function SelectField(props: SelectFieldProps) {
           getIn(touched, field.name);
         return (
           <EuiCompressedFormRow
-            label={camelCaseToTitleString(props.field.id)}
+            label={props.label || camelCaseToTitleString(props.field.id)}
             isInvalid={isInvalid}
             fullWidth={props.fullWidth}
           >

@@ -151,5 +151,6 @@ function formikToAgentUiConfig(
   existingConfig['type'].value = agentFormValues['type'];
   existingConfig['llm'].value = agentFormValues['llm'];
   existingConfig['tools'] = agentFormValues['tools'];
+  existingConfig['llmInterface'].value = agentFormValues['llmInterface'];
   return existingConfig;
 }

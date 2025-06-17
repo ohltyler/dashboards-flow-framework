@@ -106,6 +106,7 @@ export type AgentUIConfig = {
   llm: IConfigField;
   mcpConnectorIds: IConfigField[]; // list of string configs, each being connector id
   tools: ToolsConfig;
+  llmInterface: IConfigField;
 };
 
 export type WorkflowConfig = {

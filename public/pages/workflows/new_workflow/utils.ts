@@ -34,6 +34,7 @@ import {
   TOOL_TYPE,
   ToolConfig,
   AGENT_TYPE,
+  LLM_INTERFACE,
 } from '../../../../common';
 import { generateId } from '../../../utils';
 import semver from 'semver';
@@ -359,6 +360,12 @@ function fetchDefaultAgentUIConfig() {
     },
     mcpConnectorIds: [],
     tools: [],
+    llmInterface: {
+      id: 'llmInterface',
+      type: 'select',
+      selectOptions: Object.values(LLM_INTERFACE),
+      value: '',
+    },
   } as AgentUIConfig;
 }
 
