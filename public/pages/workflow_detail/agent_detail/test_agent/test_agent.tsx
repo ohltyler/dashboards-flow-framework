@@ -96,10 +96,6 @@ export function TestAgent(props: TestAgentProps) {
   const [executeError, setExecuteError] = useState<string>('');
   const [taskError, setTaskError] = useState<string>('');
   const [taskId, setTaskId] = useState<string>('');
-  const hasResources =
-    (props.workflow?.resourcesCreated &&
-      props.workflow.resourcesCreated.length > 0) ??
-    false;
   const [taskResponse, setTaskResponse] = useState<any>(undefined);
   const taskState = taskResponse?.state as TASK_STATE | undefined;
   const taskInProgress = !isEmpty(taskId) && taskState !== TASK_STATE.COMPLETED;
@@ -243,171 +239,169 @@ export function TestAgent(props: TestAgentProps) {
         </EuiFlexItem>
       </EuiFlexItem>
       <EuiFlexGroup direction="column" gutterSize="xs">
-        {hasResources && (
-          <EuiFlexItem grow={5}>
-            <EuiFlexGroup direction="column">
+        <EuiFlexItem grow={5}>
+          <EuiFlexGroup direction="column">
+            <EuiFlexItem grow={false}>
+              <EuiCompressedTextArea
+                fullWidth={true}
+                placeholder={'Ask a question'}
+                value={executeInput}
+                onChange={(e) => {
+                  setExecuteInput(e.target.value);
+                }}
+                isInvalid={false}
+                disabled={false}
+              />
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiFlexGroup direction="row">
+                <EuiFlexItem grow={false} style={{ marginTop: '0px' }}>
+                  <EuiSmallButton
+                    fill={false}
+                    disabled={
+                      isEmpty(agentId) ||
+                      isEmpty(executeInput) ||
+                      taskInProgress
+                    }
+                    isLoading={taskInProgress}
+                    onClick={async () => {
+                      await dispatch(
+                        executeAgent({
+                          agentId,
+                          apiBody: customStringify({
+                            parameters: { question: executeInput },
+                          }),
+                          dataSourceId,
+                        })
+                      )
+                        .unwrap()
+                        .then((resp) => {
+                          setTaskId(resp?.task_id || '');
+                          setExecuteError('');
+                        })
+                        .catch((err) => {
+                          setExecuteError(err);
+                        });
+                    }}
+                  >
+                    {taskInProgress ? 'Running' : 'Run'}
+                  </EuiSmallButton>
+                </EuiFlexItem>
+              </EuiFlexGroup>
+            </EuiFlexItem>
+            {!isEmpty(executeError) && (
               <EuiFlexItem grow={false}>
-                <EuiCompressedTextArea
-                  fullWidth={true}
-                  placeholder={'Ask a question'}
-                  value={executeInput}
-                  onChange={(e) => {
-                    setExecuteInput(e.target.value);
-                  }}
-                  isInvalid={false}
-                  disabled={false}
+                <EuiCallOut
+                  size="s"
+                  iconType="alert"
+                  color="danger"
+                  title={executeError}
                 />
               </EuiFlexItem>
+            )}
+            {taskInProgress && (
               <EuiFlexItem grow={false}>
-                <EuiFlexGroup direction="row">
-                  <EuiFlexItem grow={false} style={{ marginTop: '0px' }}>
-                    <EuiSmallButton
-                      fill={false}
-                      disabled={
-                        isEmpty(agentId) ||
-                        isEmpty(executeInput) ||
-                        taskInProgress
-                      }
-                      isLoading={taskInProgress}
+                <EuiFlexGroup direction="row" gutterSize="xs">
+                  <EuiFlexItem grow={false}>
+                    <EuiText size="s" color="subdued">
+                      <i>Agent is executing...</i>
+                    </EuiText>
+                  </EuiFlexItem>
+                  <EuiFlexItem grow={false}>
+                    <EuiSmallButtonIcon
+                      iconType="refresh"
+                      aria-label="refresh"
+                      style={{ marginTop: '-4px' }}
                       onClick={async () => {
                         await dispatch(
-                          executeAgent({
-                            agentId,
-                            apiBody: customStringify({
-                              parameters: { question: executeInput },
-                            }),
+                          getTask({
+                            taskId,
                             dataSourceId,
                           })
                         )
                           .unwrap()
                           .then((resp) => {
-                            setTaskId(resp?.task_id || '');
-                            setExecuteError('');
+                            setTaskResponse(resp);
+                            setTaskError('');
                           })
                           .catch((err) => {
-                            setExecuteError(err);
+                            setTaskError(err);
                           });
                       }}
-                    >
-                      {taskInProgress ? 'Running' : 'Run'}
-                    </EuiSmallButton>
+                    />
                   </EuiFlexItem>
                 </EuiFlexGroup>
               </EuiFlexItem>
-              {!isEmpty(executeError) && (
-                <EuiFlexItem grow={false}>
-                  <EuiCallOut
-                    size="s"
-                    iconType="alert"
-                    color="danger"
-                    title={executeError}
-                  />
-                </EuiFlexItem>
-              )}
-              {taskInProgress && (
-                <EuiFlexItem grow={false}>
-                  <EuiFlexGroup direction="row" gutterSize="xs">
-                    <EuiFlexItem grow={false}>
-                      <EuiText size="s" color="subdued">
-                        <i>Agent is executing...</i>
-                      </EuiText>
-                    </EuiFlexItem>
-                    <EuiFlexItem grow={false}>
-                      <EuiSmallButtonIcon
-                        iconType="refresh"
-                        aria-label="refresh"
-                        style={{ marginTop: '-4px' }}
-                        onClick={async () => {
-                          await dispatch(
-                            getTask({
-                              taskId,
-                              dataSourceId,
-                            })
-                          )
-                            .unwrap()
-                            .then((resp) => {
-                              setTaskResponse(resp);
-                              setTaskError('');
-                            })
-                            .catch((err) => {
-                              setTaskError(err);
-                            });
-                        }}
-                      />
-                    </EuiFlexItem>
-                  </EuiFlexGroup>
-                </EuiFlexItem>
-              )}
-              {!isEmpty(executeOutput) && (
-                <EuiFlexItem grow={false}>
-                  <EuiCodeBlock
-                    fontSize="m"
-                    isCopyable={true}
-                    overflowHeight={300}
+            )}
+            {!isEmpty(executeOutput) && (
+              <EuiFlexItem grow={false}>
+                <EuiCodeBlock
+                  fontSize="m"
+                  isCopyable={true}
+                  overflowHeight={300}
+                >
+                  {executeOutput}
+                </EuiCodeBlock>
+              </EuiFlexItem>
+            )}
+            {!isEmpty(taskResponse) && (
+              <EuiFlexItem grow={false}>
+                <EuiFlexGroup direction="row">
+                  <EuiFlexItem
+                    grow={false}
+                    style={{ marginLeft: '4px', marginBottom: '0px' }}
                   >
-                    {executeOutput}
-                  </EuiCodeBlock>
-                </EuiFlexItem>
-              )}
-              {!isEmpty(taskResponse) && (
-                <EuiFlexItem grow={false}>
-                  <EuiFlexGroup direction="row">
-                    <EuiFlexItem
-                      grow={false}
-                      style={{ marginLeft: '4px', marginBottom: '0px' }}
+                    <EuiSmallButtonEmpty
+                      onClick={() => setTaskFlyoutOpen(true)}
                     >
-                      <EuiSmallButtonEmpty
-                        onClick={() => setTaskFlyoutOpen(true)}
-                      >
-                        View task details
-                      </EuiSmallButtonEmpty>
-                    </EuiFlexItem>
-                  </EuiFlexGroup>
-                </EuiFlexItem>
-              )}
-              {!isEmpty(messages) && (
-                <EuiFlexItem grow={false}>
-                  <EuiFlexGroup direction="row">
-                    <EuiFlexItem
-                      grow={false}
-                      style={{
-                        marginLeft: '4px',
-                        marginTop: '0px',
-                        marginBottom: '0px',
-                      }}
+                      View task details
+                    </EuiSmallButtonEmpty>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
+              </EuiFlexItem>
+            )}
+            {!isEmpty(messages) && (
+              <EuiFlexItem grow={false}>
+                <EuiFlexGroup direction="row">
+                  <EuiFlexItem
+                    grow={false}
+                    style={{
+                      marginLeft: '4px',
+                      marginTop: '0px',
+                      marginBottom: '0px',
+                    }}
+                  >
+                    <EuiSmallButtonEmpty
+                      onClick={() => setMessagesFlyoutOpen(true)}
                     >
-                      <EuiSmallButtonEmpty
-                        onClick={() => setMessagesFlyoutOpen(true)}
-                      >
-                        View messages
-                      </EuiSmallButtonEmpty>
-                    </EuiFlexItem>
-                  </EuiFlexGroup>
-                </EuiFlexItem>
-              )}
-              {!isEmpty(traces) && (
-                <EuiFlexItem grow={false}>
-                  <EuiFlexGroup direction="row">
-                    <EuiFlexItem
-                      grow={false}
-                      style={{
-                        marginLeft: '4px',
-                        marginTop: '0px',
-                        marginBottom: '0px',
-                      }}
+                      View messages
+                    </EuiSmallButtonEmpty>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
+              </EuiFlexItem>
+            )}
+            {!isEmpty(traces) && (
+              <EuiFlexItem grow={false}>
+                <EuiFlexGroup direction="row">
+                  <EuiFlexItem
+                    grow={false}
+                    style={{
+                      marginLeft: '4px',
+                      marginTop: '0px',
+                      marginBottom: '0px',
+                    }}
+                  >
+                    <EuiSmallButtonEmpty
+                      onClick={() => setTracesFlyoutOpen(true)}
                     >
-                      <EuiSmallButtonEmpty
-                        onClick={() => setTracesFlyoutOpen(true)}
-                      >
-                        View traces
-                      </EuiSmallButtonEmpty>
-                    </EuiFlexItem>
-                  </EuiFlexGroup>
-                </EuiFlexItem>
-              )}
-            </EuiFlexGroup>
-          </EuiFlexItem>
-        )}
+                      View traces
+                    </EuiSmallButtonEmpty>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
+              </EuiFlexItem>
+            )}
+          </EuiFlexGroup>
+        </EuiFlexItem>
       </EuiFlexGroup>
     </EuiPanel>
   );

@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useFormikContext } from 'formik';
 import {
   EuiFlexGroup,
@@ -21,6 +22,7 @@ import {
 } from '../../../../../common';
 import { ModelField, SelectField } from '../../component_input';
 import {
+  AppState,
   getWorkflow,
   provisionWorkflow,
   updateWorkflow,
@@ -30,6 +32,7 @@ import {
   configToTemplateFlows,
   formikToUiConfig,
   getDataSourceId,
+  hasProvisionedAgentResources,
   reduceToTemplate,
   sleep,
   USE_NEW_HOME_PAGE,
@@ -56,7 +59,12 @@ export function AgentInputs(props: AgentInputsProps) {
   const dispatch = useAppDispatch();
   const dataSourceId = getDataSourceId();
   const dataSourceVersion = useDataSourceVersion(dataSourceId);
-  const { values } = useFormikContext<WorkflowFormValues>();
+  const { values, touched, dirty } = useFormikContext<WorkflowFormValues>();
+
+  const { loading } = useSelector((state: AppState) => state.workflows);
+  const [isCreating, setIsCreating] = useState<boolean>(false);
+  const isLoading = loading || isCreating;
+  const agentProvisioned = hasProvisionedAgentResources(props.workflow);
 
   // Update name/description if users set
   const [formInputs, setFormInputs] = useState<AgentMetadataInputs>({
@@ -189,7 +197,12 @@ export function AgentInputs(props: AgentInputsProps) {
                         <EuiFlexItem grow={false}>
                           <EuiSmallButton
                             fill={false}
+                            // TODO: make this smarter. Should disable again if the generated template remains unchanged (e.g., toggling something off and back on again).
+                            // Can follow what's done in LeftNave for all form-related state.
+                            disabled={!dirty && agentProvisioned}
+                            isLoading={isLoading}
                             onClick={async () => {
+                              setIsCreating(true);
                               const updatedConfig = formikToUiConfig(
                                 values,
                                 props.uiConfig as WorkflowConfig
@@ -231,18 +244,27 @@ export function AgentInputs(props: AgentInputsProps) {
                                   )
                                     .unwrap()
                                     .then(async (resp) => {
-                                      console.log('provision response: ', resp);
                                       await dispatch(
                                         getWorkflow({
                                           workflowId: updatedWorkflow.id as string,
                                           dataSourceId,
                                         })
-                                      );
+                                      )
+                                        .unwrap()
+                                        .then(async (resp) => {
+                                          setIsCreating(false);
+                                        });
+                                    })
+                                    .catch((err: any) => {
+                                      setIsCreating(false);
                                     });
+                                })
+                                .catch((err: any) => {
+                                  setIsCreating(false);
                                 });
                             }}
                           >
-                            Create
+                            {agentProvisioned ? 'Update' : 'Create'}
                           </EuiSmallButton>
                         </EuiFlexItem>
                       </EuiFlexGroup>

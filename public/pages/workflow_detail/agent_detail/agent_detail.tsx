@@ -17,6 +17,7 @@ import { TestAgent } from './test_agent';
 // styling
 import '../workspace/workspace-styles.scss';
 import '../../../global-styles.scss';
+import { hasProvisionedAgentResources } from '../../../utils';
 
 interface AgentDetailProps {
   workflow: Workflow;
@@ -24,10 +25,8 @@ interface AgentDetailProps {
 }
 
 export function AgentDetail(props: AgentDetailProps) {
-  const hasResources =
-    (props.workflow?.resourcesCreated &&
-      props.workflow.resourcesCreated.length > 0) ??
-    false;
+  const agentProvisioned = hasProvisionedAgentResources(props.workflow);
+
   return (
     <EuiPanel
       paddingSize="s"
@@ -43,7 +42,7 @@ export function AgentDetail(props: AgentDetailProps) {
           <EuiFlexItem grow={5}>
             <AgentInputs workflow={props.workflow} uiConfig={props.uiConfig} />
           </EuiFlexItem>
-          {hasResources && (
+          {agentProvisioned && (
             <EuiFlexItem grow={5}>
               <TestAgent workflow={props.workflow} uiConfig={props.uiConfig} />
             </EuiFlexItem>
