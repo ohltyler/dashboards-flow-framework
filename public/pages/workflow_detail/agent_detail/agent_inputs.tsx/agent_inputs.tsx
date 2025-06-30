@@ -5,7 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { isEmpty } from 'lodash';
+import { isEmpty, isEqual, sortBy } from 'lodash';
 import { getIn, useFormikContext } from 'formik';
 import {
   EuiFlexGroup,
@@ -24,6 +24,7 @@ import {
 import { ModelField, SelectField } from '../../component_input';
 import {
   AppState,
+  deprovisionWorkflow,
   getWorkflow,
   provisionWorkflow,
   updateWorkflow,
@@ -41,6 +42,7 @@ import {
 } from '../../../../utils';
 import { ToolsInputs } from './tools_inputs';
 import { AdvancedSettingsInputs } from './advanced_settings_inputs';
+import { getCore } from '../../../../services';
 
 // styling
 import '../../workspace/workspace-styles.scss';
@@ -61,7 +63,13 @@ export function AgentInputs(props: AgentInputsProps) {
   const dispatch = useAppDispatch();
   const dataSourceId = getDataSourceId();
   const dataSourceVersion = useDataSourceVersion(dataSourceId);
-  const { values, touched, dirty } = useFormikContext<WorkflowFormValues>();
+  const {
+    values,
+    dirty,
+    setTouched,
+    submitForm,
+    validateForm,
+  } = useFormikContext<WorkflowFormValues>();
 
   const { loading } = useSelector((state: AppState) => state.workflows);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -83,12 +91,141 @@ export function AgentInputs(props: AgentInputsProps) {
     }
   }, [props.workflow]);
 
+  const [templateNodesDifferent, setTemplateNodesDifferent] = useState<boolean>(
+    false
+  );
+
+  // for any form changes, check if it would produce a new template.
+  // this is so we can dynamically enable/disable the create/update buttons if applicable.
+  useEffect(() => {
+    const persistedTemplateNodes =
+      props.workflow?.workflows?.provision?.nodes || [];
+    const persistedTemplateNodesSorted = persistedTemplateNodes
+      .map((node) => sortBy(Object.entries(node)))
+      .sort();
+    const formGeneratedTemplateNodes =
+      (values?.ingest &&
+        values?.search &&
+        props.uiConfig &&
+        props.workflow &&
+        configToTemplateFlows(
+          formikToUiConfig(values, props.uiConfig as WorkflowConfig),
+          false,
+          false
+        )?.provision?.nodes) ||
+      [];
+    const formGeneratedTemplateNodesSorted = formGeneratedTemplateNodes
+      .map((node) => sortBy(Object.entries(node)))
+      .sort();
+    setTemplateNodesDifferent(
+      !isEqual(
+        persistedTemplateNodesSorted,
+        formGeneratedTemplateNodesSorted
+      ) || false
+    );
+  }, [
+    values?.agent,
+    values?.agent?.tools?.length,
+    props.uiConfig,
+    props.workflow,
+  ]);
+
   // TODO: derive the LLM interface based on the model, if applicable
   useEffect(() => {
     if (!isEmpty(getIn(values, 'agent.llm'))) {
       // TODO
     }
   }, [getIn(values, 'agent.llm')]);
+
+  // Utility fn to validate the form and update the workflow if valid
+  async function validateAndUpdateWorkflow(
+    agentProvisioned: boolean
+  ): Promise<boolean> {
+    let success = false;
+    await submitForm();
+    await validateForm()
+      .then(async (validationResults: { agent?: {} }) => {
+        const { agent } = validationResults;
+        if (agent !== undefined && Object.keys(agent)?.length > 0) {
+          getCore().notifications.toasts.addDanger('Missing or invalid fields');
+        } else {
+          setTouched({});
+          setIsCreating(true);
+          // if the agent resource already exists, deprovision first.
+          if (agentProvisioned) {
+            await dispatch(
+              deprovisionWorkflow({
+                apiBody: {
+                  workflowId: props.workflow?.id as string,
+                },
+                dataSourceId,
+              })
+            )
+              .unwrap()
+              .then(async (resp) => {
+                await sleep(1000);
+              });
+          }
+          const updatedConfig = formikToUiConfig(
+            values,
+            props.uiConfig as WorkflowConfig
+          );
+          const updatedWorkflow = {
+            ...props.workflow,
+            ui_metadata: {
+              ...props.workflow?.ui_metadata,
+              config: updatedConfig,
+            },
+            workflows: configToTemplateFlows(updatedConfig, false, false),
+          } as Workflow;
+          await dispatch(
+            updateWorkflow({
+              apiBody: {
+                workflowId: updatedWorkflow.id as string,
+                workflowTemplate: reduceToTemplate(updatedWorkflow),
+                reprovision: false,
+              },
+              dataSourceId,
+            })
+          )
+            .unwrap()
+            .then(async () => {
+              await sleep(1000);
+              await dispatch(
+                provisionWorkflow({
+                  workflowId: updatedWorkflow.id as string,
+                  dataSourceId,
+                  dataSourceVersion,
+                })
+              )
+                .unwrap()
+                .then(async (resp) => {
+                  await dispatch(
+                    getWorkflow({
+                      workflowId: updatedWorkflow.id as string,
+                      dataSourceId,
+                    })
+                  )
+                    .unwrap()
+                    .then(async (resp) => {
+                      setIsCreating(false);
+                    });
+                })
+                .catch((err: any) => {
+                  setIsCreating(false);
+                });
+            })
+            .catch((err: any) => {
+              setIsCreating(false);
+            });
+        }
+      })
+      .catch((error) => {
+        console.error('Error validating form: ', error);
+      });
+
+    return success;
+  }
 
   return (
     <>
@@ -209,72 +346,13 @@ export function AgentInputs(props: AgentInputsProps) {
                         <EuiFlexItem grow={false}>
                           <EuiSmallButton
                             fill={false}
-                            // TODO: make this smarter. Should disable again if the generated template remains unchanged (e.g., toggling something off and back on again).
-                            // Can follow what's done in LeftNave for all form-related state.
-                            // TODO: should have form validation and prevent creation if errors.
-                            disabled={!dirty && agentProvisioned}
+                            disabled={
+                              !templateNodesDifferent ||
+                              (!dirty && agentProvisioned)
+                            }
                             isLoading={isLoading}
                             onClick={async () => {
-                              setIsCreating(true);
-                              const updatedConfig = formikToUiConfig(
-                                values,
-                                props.uiConfig as WorkflowConfig
-                              );
-                              const updatedWorkflow = {
-                                ...props.workflow,
-                                ui_metadata: {
-                                  ...props.workflow?.ui_metadata,
-                                  config: updatedConfig,
-                                },
-                                workflows: configToTemplateFlows(
-                                  updatedConfig,
-                                  false,
-                                  false
-                                ),
-                              } as Workflow;
-
-                              await dispatch(
-                                updateWorkflow({
-                                  apiBody: {
-                                    workflowId: updatedWorkflow.id as string,
-                                    workflowTemplate: reduceToTemplate(
-                                      updatedWorkflow
-                                    ),
-                                    reprovision: false,
-                                  },
-                                  dataSourceId,
-                                })
-                              )
-                                .unwrap()
-                                .then(async () => {
-                                  await sleep(1000);
-                                  await dispatch(
-                                    provisionWorkflow({
-                                      workflowId: updatedWorkflow.id as string,
-                                      dataSourceId,
-                                      dataSourceVersion,
-                                    })
-                                  )
-                                    .unwrap()
-                                    .then(async (resp) => {
-                                      await dispatch(
-                                        getWorkflow({
-                                          workflowId: updatedWorkflow.id as string,
-                                          dataSourceId,
-                                        })
-                                      )
-                                        .unwrap()
-                                        .then(async (resp) => {
-                                          setIsCreating(false);
-                                        });
-                                    })
-                                    .catch((err: any) => {
-                                      setIsCreating(false);
-                                    });
-                                })
-                                .catch((err: any) => {
-                                  setIsCreating(false);
-                                });
+                              await validateAndUpdateWorkflow(agentProvisioned);
                             }}
                           >
                             {agentProvisioned ? 'Update' : 'Create'}
