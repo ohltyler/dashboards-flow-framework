@@ -100,6 +100,12 @@ export type ToolConfig = {
 };
 export type ToolsConfig = ToolConfig[];
 
+// TODO: update once its known the req'd fields
+export type MCPServerConfig = {
+  id: string;
+  toolFilters: [];
+};
+
 // TODO: make proper later on
 export type AgentUIConfig = {
   type: IConfigField;

@@ -41,6 +41,7 @@ import {
   useDataSourceVersion,
 } from '../../../../utils';
 import { ToolsInputs } from './tools_inputs';
+import { MCPServerInputs } from './mcp_server_inputs';
 import { AdvancedSettingsInputs } from './advanced_settings_inputs';
 import { getCore } from '../../../../services';
 
@@ -319,6 +320,9 @@ export function AgentInputs(props: AgentInputsProps) {
                     </EuiFlexItem>
                     <EuiFlexItem grow={false}>
                       <ToolsInputs />
+                    </EuiFlexItem>
+                    <EuiFlexItem grow={false}>
+                      <MCPServerInputs />
                     </EuiFlexItem>
                     <EuiFlexItem grow={false}>
                       <AdvancedSettingsInputs uiConfig={props.uiConfig} />
