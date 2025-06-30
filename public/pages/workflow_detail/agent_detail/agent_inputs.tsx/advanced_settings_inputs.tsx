@@ -11,7 +11,7 @@ import {
   EuiAccordion,
   EuiPanel,
 } from '@elastic/eui';
-import { WorkflowConfig } from '../../../../../common';
+import { IConfigField, WorkflowConfig } from '../../../../../common';
 import { SelectField } from '../../component_input';
 
 interface AdvancedSettingsInputsProps {
@@ -31,7 +31,7 @@ export function AdvancedSettingsInputs(props: AdvancedSettingsInputsProps) {
           <SelectField
             label="LLM Interface"
             fieldPath="agent.llmInterface"
-            field={props.uiConfig.agent?.llmInterface}
+            field={props.uiConfig.agent?.llmInterface as IConfigField}
           />
         </EuiFlexGroup>
       </EuiPanel>

@@ -466,10 +466,7 @@ export type AgentConfig = {
   name: string;
   type: AGENT_TYPE;
   description: string;
-  llm: {
-    model_id: string;
-    parameters?: {};
-  };
+  llm: string; // flow framework persists this as a stringified object. we persist the same way for consistency and form comparison
   memory?: {
     type: string;
   };

@@ -580,6 +580,7 @@ function toolsConfigToTemplateNodes(toolsConfig: ToolsConfig): TemplateNode[] {
     return {
       id: snakeCase(toolConfig.type),
       type: WORKFLOW_STEP_TYPE.CREATE_TOOL_STEP_TYPE,
+      previous_node_inputs: {},
       user_inputs: {
         type: toolConfig.type,
       },
@@ -603,18 +604,17 @@ function agentUIConfigToTemplateEdges(
 function agentUIConfigToAgentConfig(
   agentUIConfig: AgentUIConfig
 ): Partial<AgentConfig> {
-  console.log('agent config: ', agentUIConfig);
   return {
     name: DEFAULT_AGENT_NAME,
     type: agentUIConfig.type.value,
     description: '',
-    llm: {
+    llm: JSON.stringify({
       model_id: agentUIConfig.llm?.value?.id,
       // TODO: this should be dynamic
       parameters: {
         prompt: '${parameters.question}',
       },
-    },
+    }),
     memory: {
       type: 'conversation_index',
     },
