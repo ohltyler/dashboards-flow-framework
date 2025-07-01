@@ -29,8 +29,6 @@ export function MCPServer(props: MCPServerProps) {
     []
   ) as MCPServersConfig;
 
-  console.log('mcp servers value: ', mcpServersValue);
-
   // dynamically render based on the MCP server existing in the form or not
   useEffect(() => {
     const isIncluded = getIn(values, MCP_SERVERS_PATH, [])
