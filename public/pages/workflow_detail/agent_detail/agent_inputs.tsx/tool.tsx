@@ -26,7 +26,7 @@ export function Tool(props: ToolProps) {
   const TOOLS_PATH = 'agent.tools';
   const toolsValue = getIn(values, TOOLS_PATH, []) as ToolsConfig;
 
-  // base
+  // dynamically render based on the tool existing in the form or not
   useEffect(() => {
     const isIncluded = getIn(values, TOOLS_PATH, [])
       .map((tool: ToolConfig) => tool.type)
@@ -50,7 +50,7 @@ export function Tool(props: ToolProps) {
               checked={enabled}
               onChange={(e) => {
                 // disabling: remove from form list
-                let newToolsVal = toolsValue;
+                let newToolsVal = [...toolsValue] as ToolsConfig;
                 if (enabled) {
                   newToolsVal = newToolsVal.filter(
                     (tool: ToolConfig) => tool.type !== props.type

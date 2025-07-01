@@ -100,17 +100,16 @@ export type ToolConfig = {
 };
 export type ToolsConfig = ToolConfig[];
 
-// TODO: update once its known the req'd fields
 export type MCPServerConfig = {
-  id: string;
-  toolFilters: [];
+  connectorId: string;
+  toolFilters: string[];
 };
+export type MCPServersConfig = MCPServerConfig[];
 
-// TODO: make proper later on
 export type AgentUIConfig = {
   type: IConfigField;
   llm: IConfigField;
-  mcpConnectorIds: IConfigField[]; // list of string configs, each being connector id
+  mcpServers: MCPServersConfig;
   tools: ToolsConfig;
   llmInterface: IConfigField;
 };
