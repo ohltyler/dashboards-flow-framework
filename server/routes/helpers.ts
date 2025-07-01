@@ -172,10 +172,12 @@ export function getConnectorsFromResponses(
     connectorDict[connectorId] = {
       id: connectorId,
       name: connectorHit._source?.name,
+      description: connectorHit._source?.description,
       parameters: {
         model: connectorHit._source?.parameters?.model,
         dimensions: connectorHit._source?.parameters.dimensions,
       },
+      protocol: connectorHit._source?.protocol,
     } as Connector;
   });
   return connectorDict;

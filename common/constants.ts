@@ -1013,3 +1013,5 @@ export enum COMPONENT_ID {
 // We have to persist a standalone string to override 'style' component, as setting className does
 // not override the default styles from the EuiCard component.
 export const LEFT_NAV_SELECTED_STYLE = '2px solid rgba(128, 128, 128, 0.8)';
+
+export const REMOTE_MCP_PROTOCOL = 'mcp_sse';

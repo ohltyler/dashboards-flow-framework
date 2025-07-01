@@ -103,6 +103,8 @@ export type ToolsConfig = ToolConfig[];
 export type MCPServerConfig = {
   connectorId: string;
   toolFilters: string[];
+  name: string;
+  description?: string;
 };
 export type MCPServersConfig = MCPServerConfig[];
 
@@ -533,7 +535,9 @@ export type Model = {
 export type Connector = {
   id: string;
   name: string;
+  description?: string;
   parameters?: ConnectorParameters;
+  protocol?: string;
 };
 
 export type ModelDict = {
