@@ -622,10 +622,21 @@ function agentUIConfigToAgentConfig(
       agentUIConfig.type.value === AGENT_TYPE.PLAN_EXECUTE_REFLECT
         ? {
             _llm_interface: agentUIConfig.llmInterface.value,
+            mcp_connectors:
+              agentUIConfig.mcpServers?.length > 0
+                ? agentUIConfig.mcpServers.map((mcpServer) => {
+                    return {
+                      mcp_connector_id: mcpServer.connectorId,
+                      // tool_filters:
+                      //   mcpServer.toolFilters.length > 0
+                      //     ? mcpServer.toolFilters
+                      //     : undefined,
+                      tool_filters: ['abc'],
+                    };
+                  })
+                : undefined,
           }
         : {},
-    // TODO: support MCP connector as part of chat config
-    // mcp_connectors: [],
     // TODO: is app_type needed
     // app_type: 'os_chat',
   } as Partial<AgentConfig>;

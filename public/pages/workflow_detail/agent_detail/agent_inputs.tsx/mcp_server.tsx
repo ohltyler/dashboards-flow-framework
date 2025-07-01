@@ -6,7 +6,11 @@
 import React, { useEffect, useState } from 'react';
 import { getIn, useFormikContext } from 'formik';
 import { EuiFlexGroup, EuiFlexItem, EuiText, EuiSwitch } from '@elastic/eui';
-import { MCPServerConfig, WorkflowFormValues } from '../../../../../common';
+import {
+  MCPServerConfig,
+  MCPServersConfig,
+  WorkflowFormValues,
+} from '../../../../../common';
 import { isEmpty } from 'lodash';
 
 interface MCPServerProps {
@@ -18,17 +22,19 @@ export function MCPServer(props: MCPServerProps) {
   const [enabled, setEnabled] = useState<boolean>(true);
 
   const { values, setFieldValue } = useFormikContext<WorkflowFormValues>();
-  const MCP_SERVERS_PATH = 'agent.parameters.mcp_connectors';
+  const MCP_SERVERS_PATH = 'agent.mcpServers';
   const mcpServersValue = getIn(
     values,
     MCP_SERVERS_PATH,
     []
-  ) as MCPServerConfig[];
+  ) as MCPServersConfig;
 
-  // base
+  console.log('mcp servers value: ', mcpServersValue);
+
+  // dynamically render based on the MCP server existing in the form or not
   useEffect(() => {
     const isIncluded = getIn(values, MCP_SERVERS_PATH, [])
-      .map((mcpServer: MCPServerConfig) => mcpServer.id)
+      .map((mcpServer: MCPServerConfig) => mcpServer.connectorId)
       .includes(props.id);
     setEnabled(isIncluded);
   }, [props.id, mcpServersValue?.length]);
@@ -49,15 +55,16 @@ export function MCPServer(props: MCPServerProps) {
               checked={enabled}
               onChange={(e) => {
                 // disabling: remove from form list
-                let newMCPServersVal = mcpServersValue;
+                let newMCPServersVal = [...mcpServersValue] as MCPServersConfig;
                 if (enabled) {
                   newMCPServersVal = newMCPServersVal.filter(
-                    (mcpServer: MCPServerConfig) => mcpServer.id !== props.id
+                    (mcpServer: MCPServerConfig) =>
+                      mcpServer.connectorId !== props.id
                   );
                   // enabling: append to list
                 } else {
                   newMCPServersVal.push({
-                    id: props.id,
+                    connectorId: props.id,
                     toolFilters: [],
                   });
                 }

@@ -358,7 +358,7 @@ function fetchDefaultAgentUIConfig() {
         id: '',
       },
     },
-    mcpConnectorIds: [],
+    mcpServers: [],
     tools: [],
     llmInterface: {
       id: 'llmInterface',

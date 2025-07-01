@@ -13,20 +13,21 @@ import {
   EuiPanel,
 } from '@elastic/eui';
 import { MCPServer } from './mcp_server';
+import { MCPServersConfig } from '../../../../../common';
 
 interface MCPServerInputsProps {}
 
 export function MCPServerInputs(props: MCPServerInputsProps) {
   const mcpServers = [
     {
-      id: 'id-1',
-      tool_filters: [],
+      connectorId: 'id-1',
+      toolFilters: [],
     },
     {
-      id: 'id-2',
-      tool_filters: [],
+      connectorId: 'id-2',
+      toolFilters: [],
     },
-  ];
+  ] as MCPServersConfig;
 
   return (
     <EuiAccordion
@@ -39,8 +40,15 @@ export function MCPServerInputs(props: MCPServerInputsProps) {
         <EuiFlexGroup direction="column" gutterSize="s">
           {Object.values(mcpServers).map((mcpServer) => {
             return (
-              <EuiFlexItem grow={false} key={mcpServer.id} id={mcpServer.id}>
-                <MCPServer id={mcpServer.id} description="My MCP server" />
+              <EuiFlexItem
+                grow={false}
+                key={mcpServer.connectorId}
+                id={mcpServer.connectorId}
+              >
+                <MCPServer
+                  id={mcpServer.connectorId}
+                  description="My MCP server"
+                />
               </EuiFlexItem>
             );
           })}
