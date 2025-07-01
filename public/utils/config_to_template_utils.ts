@@ -618,22 +618,25 @@ function agentUIConfigToAgentConfig(
     memory: {
       type: 'conversation_index',
     },
+    // parameters field is persisted in flow framework index as string-to-string map. So, any values (if obj/arr)
+    // should be stringified first in order to be parsed correctly by flow framework.
     parameters:
       agentUIConfig.type.value === AGENT_TYPE.PLAN_EXECUTE_REFLECT
         ? {
             _llm_interface: agentUIConfig.llmInterface.value,
             mcp_connectors:
               agentUIConfig.mcpServers?.length > 0
-                ? agentUIConfig.mcpServers.map((mcpServer) => {
-                    return {
-                      mcp_connector_id: mcpServer.connectorId,
-                      // tool_filters:
-                      //   mcpServer.toolFilters.length > 0
-                      //     ? mcpServer.toolFilters
-                      //     : undefined,
-                      tool_filters: ['abc'],
-                    };
-                  })
+                ? JSON.stringify(
+                    agentUIConfig.mcpServers.map((mcpServer) => {
+                      return {
+                        mcp_connector_id: mcpServer.connectorId,
+                        tool_filters:
+                          mcpServer.toolFilters.length > 0
+                            ? mcpServer.toolFilters
+                            : undefined,
+                      };
+                    })
+                  )
                 : undefined,
           }
         : {},
