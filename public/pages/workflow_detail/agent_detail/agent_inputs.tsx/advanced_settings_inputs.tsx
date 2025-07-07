@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { getIn, useFormikContext } from 'formik';
 import {
@@ -67,13 +67,17 @@ export function AdvancedSettingsInputs(props: AdvancedSettingsInputsProps) {
             />
           </EuiFlexItem>
           {getIn(values, 'agent.type') === AGENT_TYPE.PLAN_EXECUTE_REFLECT && (
-            <EuiFlexItem grow={false}>
-              {/**
-               * TODO: figure out how to pass this as a custom param. and to configure in the template if applicable.
-               * Will also need to do the checking on the agent type.
-               */}
-              <NumberField fieldPath="agent.max_steps" label="Max steps" />
-            </EuiFlexItem>
+            <>
+              <EuiFlexItem grow={false}>
+                <NumberField fieldPath="agent.maxSteps" label="Max steps" />
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <NumberField
+                  fieldPath="agent.executorMaxIterations"
+                  label="Executor max iterations"
+                />
+              </EuiFlexItem>
+            </>
           )}
         </EuiFlexGroup>
       </EuiPanel>

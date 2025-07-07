@@ -114,6 +114,8 @@ export type AgentUIConfig = {
   mcpServers: MCPServersConfig;
   tools: ToolsConfig;
   llmInterface: IConfigField;
+  maxSteps: IConfigField;
+  executorMaxIterations: IConfigField;
 };
 
 export type WorkflowConfig = {
@@ -480,6 +482,8 @@ export type AgentConfig = {
   parameters: {
     _llm_interface?: string;
     mcp_connectors?: {}[];
+    max_steps?: number; // only applicable for plan-execute-reflect agent
+    executor_max_iterations?: number; // only applicable for plan-execute-reflect agent
   };
   tools: Tool[];
   app_type: string;
