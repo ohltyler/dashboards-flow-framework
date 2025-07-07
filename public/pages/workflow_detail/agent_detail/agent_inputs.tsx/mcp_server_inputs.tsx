@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { isEmpty } from 'lodash';
 import {
   EuiFlexGroup,
   EuiFlexItem,
@@ -12,9 +13,15 @@ import {
   EuiText,
   EuiAccordion,
   EuiPanel,
+  EuiEmptyPrompt,
+  EuiLink,
 } from '@elastic/eui';
 import { MCPServer } from './mcp_server';
-import { MCPServersConfig, REMOTE_MCP_PROTOCOL } from '../../../../../common';
+import {
+  EXTERNAL_MCP_CONNECTOR_LINK,
+  MCPServersConfig,
+  REMOTE_MCP_PROTOCOL,
+} from '../../../../../common';
 import { AppState } from '../../../../store';
 
 interface MCPServerInputsProps {}
@@ -41,24 +48,40 @@ export function MCPServerInputs(props: MCPServerInputsProps) {
   return (
     <EuiAccordion
       id="agentMCPServers"
-      buttonContent={<EuiText size="s">MCP servers</EuiText>}
+      buttonContent={<EuiText size="s">MCP Servers</EuiText>}
       initialIsOpen={true}
     >
       <EuiSpacer size="s" />
       <EuiPanel>
-        <EuiFlexGroup direction="column" gutterSize="s">
-          {Object.values(mcpServers).map((mcpServer) => {
-            return (
-              <EuiFlexItem
-                grow={false}
-                key={mcpServer.connectorId}
-                id={mcpServer.connectorId}
-              >
-                <MCPServer server={mcpServer} />
-              </EuiFlexItem>
-            );
-          })}
-        </EuiFlexGroup>
+        {isEmpty(mcpServers) ? (
+          <EuiEmptyPrompt
+            iconType={'cross'}
+            title={<h2>No MCP servers found</h2>}
+            titleSize="s"
+            body={
+              <>
+                <EuiText size="s">
+                  To create connectors to external MCP servers, see{' '}
+                  <EuiLink href={EXTERNAL_MCP_CONNECTOR_LINK}>here</EuiLink>.
+                </EuiText>
+              </>
+            }
+          />
+        ) : (
+          <EuiFlexGroup direction="column" gutterSize="s">
+            {Object.values(mcpServers).map((mcpServer) => {
+              return (
+                <EuiFlexItem
+                  grow={false}
+                  key={mcpServer.connectorId}
+                  id={mcpServer.connectorId}
+                >
+                  <MCPServer server={mcpServer} />
+                </EuiFlexItem>
+              );
+            })}
+          </EuiFlexGroup>
+        )}
       </EuiPanel>
     </EuiAccordion>
   );

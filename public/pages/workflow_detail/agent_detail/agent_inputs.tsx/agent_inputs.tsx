@@ -315,7 +315,7 @@ export function AgentInputs(props: AgentInputsProps) {
                     <EuiFlexItem grow={false}>
                       <ModelField
                         fieldPath="agent.llm"
-                        hasModelInterface={true}
+                        showMissingInterfaceCallout={false}
                       />
                     </EuiFlexItem>
                     <EuiFlexItem grow={false}>

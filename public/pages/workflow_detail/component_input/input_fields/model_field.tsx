@@ -166,7 +166,8 @@ export function ModelField(props: ModelFieldProps) {
                             <>
                               <EuiHealth
                                 color={
-                                  isEmpty(option.interface)
+                                  isEmpty(option.interface) &&
+                                  showMissingInterfaceCallout
                                     ? 'warning'
                                     : 'success'
                                 }
@@ -174,7 +175,8 @@ export function ModelField(props: ModelFieldProps) {
                                 <EuiText size="s">{option.name}</EuiText>
                               </EuiHealth>
                               <EuiText size="xs" color="subdued">
-                                {isEmpty(option.interface)
+                                {isEmpty(option.interface) &&
+                                showMissingInterfaceCallout
                                   ? 'Not ready - no model interface'
                                   : 'Deployed'}
                               </EuiText>

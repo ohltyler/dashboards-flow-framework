@@ -21,7 +21,7 @@ export function ToolsInputs(props: ToolsInputsProps) {
   return (
     <EuiAccordion
       id="agentTools"
-      buttonContent={<EuiText size="s">Tools</EuiText>}
+      buttonContent={<EuiText size="s">OpenSearch Tools</EuiText>}
       initialIsOpen={true}
     >
       <EuiSpacer size="s" />

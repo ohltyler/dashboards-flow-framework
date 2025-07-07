@@ -74,7 +74,7 @@ export function enrichPresetWorkflowWithUiMetadata(
       uiMetadata = fetchNeuralSparseSearchMetadata(workflowVersion);
       break;
     }
-    case WORKFLOW_TYPE.COMPLEX_CHATBOT: {
+    case WORKFLOW_TYPE.CONVERSATIONAL_SEARCH: {
       uiMetadata = fetchComplexChatbotMetadata();
       break;
     }
@@ -331,7 +331,7 @@ export function fetchHybridSearchWithRAGMetadata(version: string): UIState {
 
 export function fetchComplexChatbotMetadata(): UIState {
   let baseState = fetchEmptyMetadata();
-  baseState.type = WORKFLOW_TYPE.COMPLEX_CHATBOT;
+  baseState.type = WORKFLOW_TYPE.CONVERSATIONAL_SEARCH;
   baseState.config.agent = fetchDefaultAgentUIConfig();
   // enable all tools
   baseState.config.agent.tools = Object.values(TOOL_TYPE).map((tool) => {

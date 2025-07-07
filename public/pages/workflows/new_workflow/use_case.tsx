@@ -11,6 +11,7 @@ import {
   EuiCard,
   EuiSmallButton,
   EuiLink,
+  EuiBetaBadge,
 } from '@elastic/eui';
 import { Workflow } from '../../../../common';
 import { QuickConfigureModal } from './quick_configure_modal';
@@ -18,9 +19,12 @@ import ReactMarkdown from 'react-markdown';
 
 interface UseCaseProps {
   workflow: Workflow;
+  experimental?: boolean;
 }
 
 export function UseCase(props: UseCaseProps) {
+  const experimental = props.experimental ?? false;
+
   // name modal state
   const [isNameModalOpen, setIsNameModalOpen] = useState<boolean>(false);
 
@@ -34,9 +38,18 @@ export function UseCase(props: UseCaseProps) {
       )}
       <EuiCard
         title={
-          <EuiText size="s">
-            <h3>{props.workflow.name}</h3>
-          </EuiText>
+          <EuiFlexGroup direction="row" justifyContent="flexStart">
+            <EuiFlexItem grow={false}>
+              <EuiText size="s">
+                <h3>{props.workflow.name}</h3>
+              </EuiText>
+            </EuiFlexItem>
+            {experimental && (
+              <EuiFlexItem grow={false} style={{ marginTop: '16px' }}>
+                <EuiBetaBadge label="Experimental" color="hollow" />
+              </EuiFlexItem>
+            )}
+          </EuiFlexGroup>
         }
         titleSize="s"
         paddingSize="l"

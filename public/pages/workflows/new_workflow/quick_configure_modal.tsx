@@ -274,7 +274,7 @@ export function QuickConfigureModal(props: QuickConfigureModalProps) {
                 </EuiFlexItem>
                 {props.workflow?.ui_metadata?.type !== WORKFLOW_TYPE.CUSTOM &&
                   props.workflow?.ui_metadata?.type !==
-                    WORKFLOW_TYPE.COMPLEX_CHATBOT &&
+                    WORKFLOW_TYPE.CONVERSATIONAL_SEARCH &&
                   isEmpty(deployedModels) && (
                     <EuiFlexItem>
                       <EuiCallOut
@@ -538,7 +538,7 @@ function injectQuickConfigureFields(
         }
         break;
       }
-      case WORKFLOW_TYPE.COMPLEX_CHATBOT:
+      case WORKFLOW_TYPE.CONVERSATIONAL_SEARCH:
       case WORKFLOW_TYPE.CUSTOM:
       case undefined:
       default:
