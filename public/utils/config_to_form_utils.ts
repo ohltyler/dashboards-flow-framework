@@ -136,6 +136,12 @@ function agentConfigToFormik(agentUIConfig: AgentUIConfig): FormikValues {
   formValues['llmInterface'] =
     agentUIConfig.llmInterface.value ||
     getInitialValue(agentUIConfig.llmInterface.type);
+  formValues['maxSteps'] =
+    agentUIConfig.maxSteps.value ||
+    getInitialValue(agentUIConfig.maxSteps.type);
+  formValues['executorMaxIterations'] =
+    agentUIConfig.executorMaxIterations.value ||
+    getInitialValue(agentUIConfig.executorMaxIterations.type);
   return formValues;
 }
 

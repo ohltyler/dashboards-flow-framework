@@ -366,6 +366,16 @@ function fetchDefaultAgentUIConfig() {
       selectOptions: Object.values(LLM_INTERFACE),
       value: '',
     },
+    maxSteps: {
+      id: 'maxSteps',
+      type: 'number',
+      value: 20,
+    },
+    executorMaxIterations: {
+      id: 'executorMaxIterations',
+      type: 'number',
+      value: 20,
+    },
   } as AgentUIConfig;
 }
 

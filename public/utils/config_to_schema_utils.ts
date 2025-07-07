@@ -144,6 +144,10 @@ function agentUIConfigToSchema(agentUIConfig: AgentUIConfig): Schema {
   agentSchemaObj['type'] = getFieldSchema(agentUIConfig.type);
   agentSchemaObj['llm'] = getFieldSchema(agentUIConfig.llm);
   agentSchemaObj['llmInterface'] = getFieldSchema(agentUIConfig.llmInterface);
+  agentSchemaObj['maxSteps'] = getFieldSchema(agentUIConfig.maxSteps);
+  agentSchemaObj['executorMaxIterations'] = getFieldSchema(
+    agentUIConfig.executorMaxIterations
+  );
 
   return yup.object(agentSchemaObj);
 }

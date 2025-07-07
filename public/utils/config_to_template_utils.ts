@@ -638,6 +638,8 @@ function agentUIConfigToAgentConfig(
                     })
                   )
                 : undefined,
+            max_steps: agentUIConfig.maxSteps.value,
+            executor_max_iterations: agentUIConfig.executorMaxIterations.value,
           }
         : {},
     // TODO: is app_type needed

@@ -153,5 +153,9 @@ function formikToAgentUiConfig(
   existingConfig['tools'] = agentFormValues['tools'];
   existingConfig['mcpServers'] = agentFormValues['mcpServers'];
   existingConfig['llmInterface'].value = agentFormValues['llmInterface'];
+  existingConfig['maxSteps'].value = agentFormValues['maxSteps'];
+  existingConfig['executorMaxIterations'].value =
+    agentFormValues['executorMaxIterations'];
+
   return existingConfig;
 }

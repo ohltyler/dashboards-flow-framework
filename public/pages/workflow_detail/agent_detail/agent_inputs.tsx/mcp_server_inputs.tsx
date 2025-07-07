@@ -49,7 +49,7 @@ export function MCPServerInputs(props: MCPServerInputsProps) {
     <EuiAccordion
       id="agentMCPServers"
       buttonContent={<EuiText size="s">MCP Servers</EuiText>}
-      initialIsOpen={true}
+      initialIsOpen={!isEmpty(mcpServers)}
     >
       <EuiSpacer size="s" />
       <EuiPanel>
