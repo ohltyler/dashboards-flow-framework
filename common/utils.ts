@@ -71,6 +71,6 @@ export function isRAGUseCase(workflowType?: WORKFLOW_TYPE): boolean {
 export function isAgentUseCase(workflowType?: WORKFLOW_TYPE): boolean {
   return (
     workflowType !== undefined &&
-    [WORKFLOW_TYPE.COMPLEX_CHATBOT].includes(workflowType)
+    [WORKFLOW_TYPE.CONVERSATIONAL_SEARCH].includes(workflowType)
   );
 }

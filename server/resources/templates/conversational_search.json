@@ -1,0 +1,13 @@
+{
+    "name": "Conversational Search",
+    "description": "Build a conversational chatbot with memory and a configurable list of tools and external knowledge bases.",
+    "version": {
+        "template": "1.0.0",
+        "compatibility": [
+            "3.0.0"
+        ]
+    },
+    "ui_metadata": {
+        "type": "Conversational Search"
+    }
+}

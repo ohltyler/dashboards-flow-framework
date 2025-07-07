@@ -218,7 +218,7 @@ export enum WORKFLOW_TYPE {
   HYBRID_SEARCH_WITH_RAG = 'RAG with Hybrid Search',
   SEMANTIC_SEARCH_USING_SPARSE_ENCODERS = 'Semantic Search using Sparse Encoders',
   CUSTOM = 'Custom Search',
-  COMPLEX_CHATBOT = 'Complex Chatbot',
+  CONVERSATIONAL_SEARCH = 'Conversational Search',
   UNKNOWN = 'Unknown',
 }
 export enum WORKFLOW_TYPE_LEGACY {
@@ -316,6 +316,8 @@ export const ML_REMOTE_MODEL_LINK =
   'https://docs.opensearch.org/docs/latest/ml-commons-plugin/remote-models/supported-connectors/';
 export const ML_INTERFACE_LINK =
   'https://docs.opensearch.org/docs/latest/ml-commons-plugin/api/model-apis/register-model/#the-interface-parameter';
+export const EXTERNAL_MCP_CONNECTOR_LINK =
+  'https://docs.opensearch.org/docs/latest/ml-commons-plugin/agents-tools/mcp/mcp-connector/';
 export const TEXT_CHUNKING_PROCESSOR_LINK =
   'https://opensearch.org/docs/latest/ingest-pipelines/processors/text-chunking/';
 export const CREATE_WORKFLOW_LINK =

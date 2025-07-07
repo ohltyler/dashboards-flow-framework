@@ -213,7 +213,12 @@ export function NewWorkflow(props: NewWorkflowProps) {
             {filteredWorkflows.map((workflow: Workflow, index) => {
               return (
                 <EuiFlexItem key={index}>
-                  <UseCase workflow={workflow} />
+                  <UseCase
+                    workflow={workflow}
+                    experimental={
+                      workflow.name === WORKFLOW_TYPE.CONVERSATIONAL_SEARCH
+                    }
+                  />
                 </EuiFlexItem>
               );
             })}
