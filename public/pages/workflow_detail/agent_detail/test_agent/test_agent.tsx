@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { isEmpty } from 'lodash';
 import { getIn } from 'formik';
 import {
@@ -57,6 +57,8 @@ interface TestAgentProps {
   workflow: Workflow;
   uiConfig: WorkflowConfig | undefined;
 }
+
+const REFRESH_RATE_MILLIS = 2000; // how often to fetch task updates during async execution
 
 export function TestAgent(props: TestAgentProps) {
   const dispatch = useAppDispatch();
@@ -115,6 +117,28 @@ export function TestAgent(props: TestAgentProps) {
     !isEmpty(taskId) &&
     taskState !== TASK_STATE.COMPLETED &&
     taskState !== TASK_STATE.FAILED;
+
+  // auto-refresh to fetch the latest task state, if the task is set in progress.
+  // stop refreshing once the task is in a completed state (failed or completed)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    if (taskInProgress) {
+      intervalRef.current = setInterval(() => {
+        refreshTaskExecution();
+      }, REFRESH_RATE_MILLIS);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+    // cleanup
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [taskInProgress]);
 
   useEffect(() => {
     setExecuteOutput(getModelResponseFromTask(taskResponse));
@@ -232,7 +256,7 @@ export function TestAgent(props: TestAgentProps) {
         <EuiFlyout onClose={() => setAgentFlyoutOpen(false)}>
           <EuiFlyoutHeader>
             <EuiTitle>
-              <h2>{`Agent`}</h2>
+              <h2>{`Agent details`}</h2>
             </EuiTitle>
           </EuiFlyoutHeader>
           <EuiFlyoutBody>
