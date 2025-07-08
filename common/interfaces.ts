@@ -577,7 +577,7 @@ export enum WORKFLOW_STATE {
 export enum TASK_STATE {
   CREATED = 'CREATED',
   COMPLETED = 'COMPLETED',
-  FAILURE = 'FAILURE',
+  FAILED = 'FAILED',
 }
 
 export type WorkflowResource = {

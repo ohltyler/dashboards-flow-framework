@@ -18,13 +18,19 @@ import {
   EuiCompressedTextArea,
   EuiHorizontalRule,
   EuiCodeBlock,
-  EuiSmallButtonIcon,
   EuiFlyout,
   EuiFlyoutHeader,
   EuiFlyoutBody,
+  EuiAccordion,
+  EuiLink,
+  EuiSpacer,
 } from '@elastic/eui';
 import {
   customStringify,
+  EXECUTE_AGENT_LINK,
+  ML_COMMONS_MESSAGES_LINK,
+  ML_COMMONS_TASK_LINK,
+  ML_COMMONS_TRACES_LINK,
   TASK_STATE,
   Workflow,
   WORKFLOW_STEP_TYPE,
@@ -54,9 +60,13 @@ export function TestAgent(props: TestAgentProps) {
   const dataSourceId = getDataSourceId();
 
   const [agentFlyoutOpen, setAgentFlyoutOpen] = useState<boolean>(false);
-  const [taskFlyoutOpen, setTaskFlyoutOpen] = useState<boolean>(false);
-  const [messagesFlyoutOpen, setMessagesFlyoutOpen] = useState<boolean>(false);
-  const [tracesFlyoutOpen, setTracesFlyoutOpen] = useState<boolean>(false);
+  const [executionDetailsFlyoutOpen, setExecutionDetailsFlyoutOpen] = useState<
+    boolean
+  >(false);
+  // Task errors can be extremely long. So, we default to showing the full error in a flyout with scroll overflow by default.
+  const [taskErrorFlyoutOpen, setTaskErrorFlyoutOpen] = useState<boolean>(
+    false
+  );
 
   // Fetch agent ID and agent details if set
   const [agentId, setAgentId] = useState<string>('');
@@ -94,11 +104,14 @@ export function TestAgent(props: TestAgentProps) {
   const [executeInput, setExecuteInput] = useState<string>('');
   const [executeOutput, setExecuteOutput] = useState<string>('{}');
   const [executeError, setExecuteError] = useState<string>('');
-  const [taskError, setTaskError] = useState<string>('');
   const [taskId, setTaskId] = useState<string>('');
   const [taskResponse, setTaskResponse] = useState<any>(undefined);
   const taskState = taskResponse?.state as TASK_STATE | undefined;
-  const taskInProgress = !isEmpty(taskId) && taskState !== TASK_STATE.COMPLETED;
+  const taskError = getIn(taskResponse, 'response.error_message', '');
+  const taskInProgress =
+    !isEmpty(taskId) &&
+    taskState !== TASK_STATE.COMPLETED &&
+    taskState !== TASK_STATE.FAILED;
 
   useEffect(() => {
     setExecuteOutput(getModelResponseFromTask(taskResponse));
@@ -153,6 +166,17 @@ export function TestAgent(props: TestAgentProps) {
     }
   }, [messages]);
 
+  const containsExecutionDetails =
+    !isEmpty(taskResponse) || !isEmpty(messages) || !isEmpty(traces);
+
+  function clearExecutionState(): void {
+    setExecuteOutput('');
+    setTaskResponse('');
+    setExecuteError('');
+    setMessages([]);
+    setTraces([]);
+  }
+
   return (
     <EuiPanel
       data-testid="leftNavPanel"
@@ -177,39 +201,114 @@ export function TestAgent(props: TestAgentProps) {
           </EuiFlyoutBody>
         </EuiFlyout>
       )}
-      {taskFlyoutOpen && (
-        <EuiFlyout onClose={() => setTaskFlyoutOpen(false)}>
+      {taskErrorFlyoutOpen && (
+        <EuiFlyout onClose={() => setTaskErrorFlyoutOpen(false)}>
           <EuiFlyoutHeader>
             <EuiTitle>
-              <h2>{`Task`}</h2>
+              <h2>{`Execution task error`}</h2>
             </EuiTitle>
           </EuiFlyoutHeader>
           <EuiFlyoutBody>
-            <EuiCodeBlock>{customStringify(taskResponse)}</EuiCodeBlock>
+            <EuiCodeBlock>{customStringify(taskError)}</EuiCodeBlock>
           </EuiFlyoutBody>
         </EuiFlyout>
       )}
-      {messagesFlyoutOpen && (
-        <EuiFlyout onClose={() => setMessagesFlyoutOpen(false)}>
+      {executionDetailsFlyoutOpen && (
+        <EuiFlyout onClose={() => setExecutionDetailsFlyoutOpen(false)}>
           <EuiFlyoutHeader>
             <EuiTitle>
-              <h2>{`Messages`}</h2>
+              <h2>{`Execution Details`}</h2>
             </EuiTitle>
           </EuiFlyoutHeader>
           <EuiFlyoutBody>
-            <EuiCodeBlock>{customStringify(messages)}</EuiCodeBlock>
-          </EuiFlyoutBody>
-        </EuiFlyout>
-      )}
-      {tracesFlyoutOpen && (
-        <EuiFlyout onClose={() => setTracesFlyoutOpen(false)}>
-          <EuiFlyoutHeader>
-            <EuiTitle>
-              <h2>{`Traces`}</h2>
-            </EuiTitle>
-          </EuiFlyoutHeader>
-          <EuiFlyoutBody>
-            <EuiCodeBlock>{customStringify(traces)}</EuiCodeBlock>
+            <EuiText>
+              Each agent execution produces several resources to aid in
+              debugging and user understanding.{' '}
+              <EuiLink href={EXECUTE_AGENT_LINK} target="_blank">
+                Learn more
+              </EuiLink>
+            </EuiText>
+            {!isEmpty(taskResponse) && (
+              <>
+                <EuiSpacer size="m" />
+                <EuiAccordion
+                  id="taskResponseAccordion"
+                  initialIsOpen={false}
+                  buttonContent={
+                    <EuiFlexGroup direction="row" gutterSize="s">
+                      <EuiFlexItem grow={false}>
+                        <EuiText size="m">Task</EuiText>
+                      </EuiFlexItem>
+                      <EuiFlexItem grow={false} style={{ marginTop: '8px' }}>
+                        <EuiText size="xs">
+                          <EuiLink href={ML_COMMONS_TASK_LINK} target="_blank">
+                            What is this?
+                          </EuiLink>
+                        </EuiText>
+                      </EuiFlexItem>
+                    </EuiFlexGroup>
+                  }
+                >
+                  <EuiCodeBlock>{customStringify(taskResponse)}</EuiCodeBlock>
+                </EuiAccordion>
+              </>
+            )}
+            {!isEmpty(messages) && (
+              <>
+                <EuiSpacer size="m" />
+                <EuiAccordion
+                  id="messagesAccordion"
+                  initialIsOpen={false}
+                  buttonContent={
+                    <EuiFlexGroup direction="row" gutterSize="s">
+                      <EuiFlexItem grow={false}>
+                        <EuiText size="m">Messages</EuiText>
+                      </EuiFlexItem>
+                      <EuiFlexItem grow={false} style={{ marginTop: '8px' }}>
+                        <EuiText size="xs">
+                          <EuiLink
+                            href={ML_COMMONS_MESSAGES_LINK}
+                            target="_blank"
+                          >
+                            What is this?
+                          </EuiLink>
+                        </EuiText>
+                      </EuiFlexItem>
+                    </EuiFlexGroup>
+                  }
+                >
+                  <EuiCodeBlock>{customStringify(messages)}</EuiCodeBlock>
+                </EuiAccordion>
+              </>
+            )}
+            {!isEmpty(traces) && (
+              <>
+                <EuiSpacer size="m" />
+                <EuiAccordion
+                  id="tracesAccordion"
+                  initialIsOpen={false}
+                  buttonContent={
+                    <EuiFlexGroup direction="row" gutterSize="s">
+                      <EuiFlexItem grow={false}>
+                        <EuiText size="m">Traces</EuiText>
+                      </EuiFlexItem>
+                      <EuiFlexItem grow={false} style={{ marginTop: '8px' }}>
+                        <EuiText size="xs">
+                          <EuiLink
+                            href={ML_COMMONS_TRACES_LINK}
+                            target="_blank"
+                          >
+                            What is this?
+                          </EuiLink>
+                        </EuiText>
+                      </EuiFlexItem>
+                    </EuiFlexGroup>
+                  }
+                >
+                  <EuiCodeBlock>{customStringify(traces)}</EuiCodeBlock>
+                </EuiAccordion>
+              </>
+            )}
           </EuiFlyoutBody>
         </EuiFlyout>
       )}
@@ -241,6 +340,36 @@ export function TestAgent(props: TestAgentProps) {
       <EuiFlexGroup direction="column" gutterSize="xs">
         <EuiFlexItem grow={5}>
           <EuiFlexGroup direction="column">
+            {!isEmpty(taskError) && (
+              <EuiFlexItem grow={true}>
+                <EuiCallOut
+                  size="s"
+                  iconType={'alert'}
+                  color="danger"
+                  title="Execution task failed"
+                >
+                  {
+                    <EuiSmallButtonEmpty
+                      onClick={() => setTaskErrorFlyoutOpen(true)}
+                    >
+                      View full error
+                    </EuiSmallButtonEmpty>
+                  }
+                </EuiCallOut>
+              </EuiFlexItem>
+            )}
+            {!isEmpty(executeError) && (
+              <EuiFlexItem grow={false}>
+                <EuiCallOut
+                  size="s"
+                  iconType="alert"
+                  color="danger"
+                  title="Execution failed"
+                >
+                  {executeError}
+                </EuiCallOut>
+              </EuiFlexItem>
+            )}
             <EuiFlexItem grow={false}>
               <EuiCompressedTextArea
                 fullWidth={true}
@@ -254,7 +383,7 @@ export function TestAgent(props: TestAgentProps) {
               />
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
-              <EuiFlexGroup direction="row">
+              <EuiFlexGroup direction="row" gutterSize="xs">
                 <EuiFlexItem grow={false} style={{ marginTop: '0px' }}>
                   <EuiSmallButton
                     fill={false}
@@ -277,41 +406,25 @@ export function TestAgent(props: TestAgentProps) {
                         .unwrap()
                         .then((resp) => {
                           setTaskId(resp?.task_id || '');
-                          setExecuteError('');
+                          clearExecutionState();
                         })
                         .catch((err) => {
                           setExecuteError(err);
                         });
                     }}
                   >
-                    {taskInProgress ? 'Running' : 'Run'}
+                    {taskInProgress
+                      ? 'Running'
+                      : !isEmpty(executeOutput)
+                      ? 'Re-run'
+                      : 'Run'}
                   </EuiSmallButton>
                 </EuiFlexItem>
-              </EuiFlexGroup>
-            </EuiFlexItem>
-            {!isEmpty(executeError) && (
-              <EuiFlexItem grow={false}>
-                <EuiCallOut
-                  size="s"
-                  iconType="alert"
-                  color="danger"
-                  title={executeError}
-                />
-              </EuiFlexItem>
-            )}
-            {taskInProgress && (
-              <EuiFlexItem grow={false}>
-                <EuiFlexGroup direction="row" gutterSize="xs">
-                  <EuiFlexItem grow={false}>
-                    <EuiText size="s" color="subdued">
-                      <i>Agent is executing...</i>
-                    </EuiText>
-                  </EuiFlexItem>
-                  <EuiFlexItem grow={false}>
-                    <EuiSmallButtonIcon
+                {taskInProgress && (
+                  <EuiFlexItem grow={false} style={{ marginTop: '0px' }}>
+                    <EuiSmallButtonEmpty
                       iconType="refresh"
                       aria-label="refresh"
-                      style={{ marginTop: '-4px' }}
                       onClick={async () => {
                         await dispatch(
                           getTask({
@@ -322,82 +435,37 @@ export function TestAgent(props: TestAgentProps) {
                           .unwrap()
                           .then((resp) => {
                             setTaskResponse(resp);
-                            setTaskError('');
                           })
-                          .catch((err) => {
-                            setTaskError(err);
-                          });
+                          .catch((err) => {});
                       }}
-                    />
+                    >
+                      Refresh
+                    </EuiSmallButtonEmpty>
                   </EuiFlexItem>
-                </EuiFlexGroup>
-              </EuiFlexItem>
-            )}
+                )}
+                {containsExecutionDetails && (
+                  <EuiFlexItem grow={false} style={{ marginTop: '0px' }}>
+                    <EuiSmallButtonEmpty
+                      aria-label="refresh"
+                      onClick={async () => {
+                        setExecutionDetailsFlyoutOpen(true);
+                      }}
+                    >
+                      View execution details
+                    </EuiSmallButtonEmpty>
+                  </EuiFlexItem>
+                )}
+              </EuiFlexGroup>
+            </EuiFlexItem>
             {!isEmpty(executeOutput) && (
               <EuiFlexItem grow={false}>
                 <EuiCodeBlock
                   fontSize="m"
                   isCopyable={true}
-                  overflowHeight={300}
+                  overflowHeight={500}
                 >
                   {executeOutput}
                 </EuiCodeBlock>
-              </EuiFlexItem>
-            )}
-            {!isEmpty(taskResponse) && (
-              <EuiFlexItem grow={false}>
-                <EuiFlexGroup direction="row">
-                  <EuiFlexItem
-                    grow={false}
-                    style={{ marginLeft: '4px', marginBottom: '0px' }}
-                  >
-                    <EuiSmallButtonEmpty
-                      onClick={() => setTaskFlyoutOpen(true)}
-                    >
-                      View task details
-                    </EuiSmallButtonEmpty>
-                  </EuiFlexItem>
-                </EuiFlexGroup>
-              </EuiFlexItem>
-            )}
-            {!isEmpty(messages) && (
-              <EuiFlexItem grow={false}>
-                <EuiFlexGroup direction="row">
-                  <EuiFlexItem
-                    grow={false}
-                    style={{
-                      marginLeft: '4px',
-                      marginTop: '0px',
-                      marginBottom: '0px',
-                    }}
-                  >
-                    <EuiSmallButtonEmpty
-                      onClick={() => setMessagesFlyoutOpen(true)}
-                    >
-                      View messages
-                    </EuiSmallButtonEmpty>
-                  </EuiFlexItem>
-                </EuiFlexGroup>
-              </EuiFlexItem>
-            )}
-            {!isEmpty(traces) && (
-              <EuiFlexItem grow={false}>
-                <EuiFlexGroup direction="row">
-                  <EuiFlexItem
-                    grow={false}
-                    style={{
-                      marginLeft: '4px',
-                      marginTop: '0px',
-                      marginBottom: '0px',
-                    }}
-                  >
-                    <EuiSmallButtonEmpty
-                      onClick={() => setTracesFlyoutOpen(true)}
-                    >
-                      View traces
-                    </EuiSmallButtonEmpty>
-                  </EuiFlexItem>
-                </EuiFlexGroup>
               </EuiFlexItem>
             )}
           </EuiFlexGroup>
