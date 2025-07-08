@@ -24,6 +24,7 @@ import {
   EuiAccordion,
   EuiLink,
   EuiSpacer,
+  EuiButtonIcon,
 } from '@elastic/eui';
 import {
   customStringify,
@@ -177,6 +178,20 @@ export function TestAgent(props: TestAgentProps) {
     setTraces([]);
   }
 
+  async function refreshTaskExecution() {
+    await dispatch(
+      getTask({
+        taskId,
+        dataSourceId,
+      })
+    )
+      .unwrap()
+      .then((resp) => {
+        setTaskResponse(resp);
+      })
+      .catch((err) => {});
+  }
+
   return (
     <EuiPanel
       data-testid="leftNavPanel"
@@ -216,12 +231,28 @@ export function TestAgent(props: TestAgentProps) {
       {executionDetailsFlyoutOpen && (
         <EuiFlyout onClose={() => setExecutionDetailsFlyoutOpen(false)}>
           <EuiFlyoutHeader>
-            <EuiTitle>
-              <h2>{`Execution Details`}</h2>
-            </EuiTitle>
+            <EuiFlexGroup direction="row">
+              <EuiFlexItem grow={false}>
+                <EuiTitle>
+                  <h2>{`Execution Details`}</h2>
+                </EuiTitle>
+              </EuiFlexItem>
+              {taskInProgress && (
+                <EuiFlexItem grow={false} style={{ marginTop: '20px' }}>
+                  <EuiButtonIcon
+                    aria-label="refresh"
+                    iconType="refresh"
+                    iconSize="l"
+                    onClick={async () => {
+                      refreshTaskExecution();
+                    }}
+                  />
+                </EuiFlexItem>
+              )}
+            </EuiFlexGroup>
           </EuiFlyoutHeader>
           <EuiFlyoutBody>
-            <EuiText>
+            <EuiText color="subdued">
               Each agent execution produces several resources to aid in
               debugging and user understanding.{' '}
               <EuiLink href={EXECUTE_AGENT_LINK} target="_blank">
@@ -426,17 +457,7 @@ export function TestAgent(props: TestAgentProps) {
                       iconType="refresh"
                       aria-label="refresh"
                       onClick={async () => {
-                        await dispatch(
-                          getTask({
-                            taskId,
-                            dataSourceId,
-                          })
-                        )
-                          .unwrap()
-                          .then((resp) => {
-                            setTaskResponse(resp);
-                          })
-                          .catch((err) => {});
+                        refreshTaskExecution();
                       }}
                     >
                       Refresh
