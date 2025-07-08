@@ -40,7 +40,12 @@ export function AgentDetail(props: AgentDetailProps) {
       }}
     >
       {props.uiConfig !== undefined ? (
-        <EuiFlexGroup direction="row" className="stretch-absolute">
+        <EuiFlexGroup
+          direction="row"
+          className="stretch-absolute"
+          style={{ paddingBottom: '64px' }}
+          gutterSize="xs"
+        >
           <EuiFlexItem grow={3}>
             <AgentInputs
               workflow={props.workflow}
