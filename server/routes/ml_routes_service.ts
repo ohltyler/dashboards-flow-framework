@@ -149,6 +149,29 @@ export function registerMLRoutes(
     },
     mlRoutesService.getTask
   );
+  router.delete(
+    {
+      path: `${BASE_TASK_NODE_API_PATH}/{task_id}`,
+      validate: {
+        params: schema.object({
+          task_id: schema.string(),
+        }),
+      },
+    },
+    mlRoutesService.deleteTask
+  );
+  router.delete(
+    {
+      path: `${BASE_NODE_API_PATH}/{data_source_id}/task/{task_id}`,
+      validate: {
+        params: schema.object({
+          data_source_id: schema.string(),
+          task_id: schema.string(),
+        }),
+      },
+    },
+    mlRoutesService.deleteTask
+  );
   router.get(
     {
       path: `${BASE_AGENT_NODE_API_PATH}/{agent_id}`,
@@ -361,6 +384,32 @@ export class MLRoutesService {
         this.client
       );
       const resp = await callWithRequest('mlClient.getTask', {
+        task_id,
+      });
+      return res.ok({ body: resp });
+    } catch (err: any) {
+      return generateCustomError(res, err);
+    }
+  };
+
+  deleteTask = async (
+    context: RequestHandlerContext,
+    req: OpenSearchDashboardsRequest,
+    res: OpenSearchDashboardsResponseFactory
+  ): Promise<IOpenSearchDashboardsResponse<any>> => {
+    try {
+      const { task_id } = req.params as {
+        task_id: string;
+      };
+      const { data_source_id = '' } = req.params as { data_source_id?: string };
+      const callWithRequest = getClientBasedOnDataSource(
+        context,
+        this.dataSourceEnabled,
+        req,
+        data_source_id,
+        this.client
+      );
+      const resp = await callWithRequest('mlClient.deleteTask', {
         task_id,
       });
       return res.ok({ body: resp });

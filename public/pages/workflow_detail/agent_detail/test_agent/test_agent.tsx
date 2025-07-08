@@ -25,6 +25,7 @@ import {
   EuiLink,
   EuiSpacer,
   EuiButtonIcon,
+  EuiLoadingSpinner,
 } from '@elastic/eui';
 import {
   customStringify,
@@ -38,6 +39,7 @@ import {
   WorkflowConfig,
 } from '../../../../../common';
 import {
+  deleteTask,
   executeAgent,
   getAgent,
   getMessages,
@@ -167,6 +169,13 @@ export function TestAgent(props: TestAgentProps) {
     }
   }, [messages]);
 
+  // If any changes to the config (e.g., adding/removing a tool), clear out any
+  // leftover execution state.
+  useEffect(() => {
+    setTaskId('');
+    clearExecutionState();
+  }, [props.uiConfig]);
+
   const containsExecutionDetails =
     !isEmpty(taskResponse) || !isEmpty(messages) || !isEmpty(traces);
 
@@ -190,6 +199,21 @@ export function TestAgent(props: TestAgentProps) {
         setTaskResponse(resp);
       })
       .catch((err) => {});
+  }
+  async function stopTaskExecution() {
+    await dispatch(
+      deleteTask({
+        taskId,
+        dataSourceId,
+      })
+    )
+      .unwrap()
+      .then((resp) => {})
+      .catch((err) => {})
+      .finally(() => {
+        setTaskId('');
+        clearExecutionState();
+      });
   }
 
   return (
@@ -418,56 +442,69 @@ export function TestAgent(props: TestAgentProps) {
                 <EuiFlexItem grow={false} style={{ marginTop: '0px' }}>
                   <EuiSmallButton
                     fill={false}
-                    disabled={
-                      isEmpty(agentId) ||
-                      isEmpty(executeInput) ||
-                      taskInProgress
-                    }
-                    isLoading={taskInProgress}
+                    disabled={isEmpty(agentId) || isEmpty(executeInput)}
+                    color={taskInProgress ? 'danger' : 'primary'}
+                    isLoading={false}
                     onClick={async () => {
-                      await dispatch(
-                        executeAgent({
-                          agentId,
-                          apiBody: customStringify({
-                            parameters: { question: executeInput },
-                          }),
-                          dataSourceId,
-                        })
-                      )
-                        .unwrap()
-                        .then((resp) => {
-                          setTaskId(resp?.task_id || '');
-                          clearExecutionState();
-                        })
-                        .catch((err) => {
-                          setExecuteError(err);
-                        });
+                      if (taskInProgress) {
+                        stopTaskExecution();
+                      } else {
+                        await dispatch(
+                          executeAgent({
+                            agentId,
+                            apiBody: customStringify({
+                              parameters: { question: executeInput },
+                            }),
+                            dataSourceId,
+                          })
+                        )
+                          .unwrap()
+                          .then((resp) => {
+                            setTaskId(resp?.task_id || '');
+                            clearExecutionState();
+                          })
+                          .catch((err) => {
+                            setExecuteError(err);
+                          });
+                      }
                     }}
                   >
                     {taskInProgress
-                      ? 'Running'
-                      : !isEmpty(executeOutput)
+                      ? 'Cancel'
+                      : !isEmpty(executeOutput) ||
+                        !isEmpty(taskError) ||
+                        !isEmpty(executeError)
                       ? 'Re-run'
                       : 'Run'}
                   </EuiSmallButton>
                 </EuiFlexItem>
                 {taskInProgress && (
-                  <EuiFlexItem grow={false} style={{ marginTop: '0px' }}>
-                    <EuiSmallButtonEmpty
+                  <EuiFlexItem grow={false} style={{ marginLeft: '8px' }}>
+                    <EuiLoadingSpinner size="l" />
+                  </EuiFlexItem>
+                )}
+                {taskInProgress && (
+                  <EuiFlexItem grow={false} style={{ marginLeft: '6px' }}>
+                    <EuiButtonIcon
+                      iconSize="l"
                       iconType="refresh"
                       aria-label="refresh"
                       onClick={async () => {
                         refreshTaskExecution();
                       }}
-                    >
-                      Refresh
-                    </EuiSmallButtonEmpty>
+                    />
                   </EuiFlexItem>
                 )}
-                {containsExecutionDetails && (
-                  <EuiFlexItem grow={false} style={{ marginTop: '0px' }}>
+              </EuiFlexGroup>
+            </EuiFlexItem>
+            {containsExecutionDetails && (
+              <EuiFlexItem
+                grow={false}
+                style={{ marginLeft: '4px', marginTop: '0px' }}
+              >
+                <EuiFlexGroup direction="row">
+                  <EuiFlexItem grow={false}>
                     <EuiSmallButtonEmpty
-                      aria-label="refresh"
                       onClick={async () => {
                         setExecutionDetailsFlyoutOpen(true);
                       }}
@@ -475,9 +512,9 @@ export function TestAgent(props: TestAgentProps) {
                       View execution details
                     </EuiSmallButtonEmpty>
                   </EuiFlexItem>
-                )}
-              </EuiFlexGroup>
-            </EuiFlexItem>
+                </EuiFlexGroup>
+              </EuiFlexItem>
+            )}
             {!isEmpty(executeOutput) && (
               <EuiFlexItem grow={false}>
                 <EuiCodeBlock
