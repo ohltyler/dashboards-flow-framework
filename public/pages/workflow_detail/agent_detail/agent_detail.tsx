@@ -41,7 +41,7 @@ export function AgentDetail(props: AgentDetailProps) {
     >
       {props.uiConfig !== undefined ? (
         <EuiFlexGroup direction="row" className="stretch-absolute">
-          <EuiFlexItem grow={5}>
+          <EuiFlexItem grow={3}>
             <AgentInputs
               workflow={props.workflow}
               uiConfig={props.uiConfig}
@@ -50,7 +50,7 @@ export function AgentDetail(props: AgentDetailProps) {
             />
           </EuiFlexItem>
           {agentProvisioned && (
-            <EuiFlexItem grow={5}>
+            <EuiFlexItem grow={7}>
               <TestAgent
                 workflow={props.workflow}
                 uiConfig={props.uiConfig}
