@@ -25,6 +25,7 @@ const SEARCH_CONNECTORS_ACTION = `${CONNECTORS_ACTION_PREFIX}/search`;
 const REGISTER_AGENT_ACTION = `${AGENTS_ACTION_PREFIX}/register`;
 const EXECUTE_AGENT_ACTION = `${AGENTS_ACTION_PREFIX}/execute`;
 const GET_TASK_ACTION = `${TASKS_ACTION_PREFIX}/get`;
+const DELETE_TASK_ACTION = `${TASKS_ACTION_PREFIX}/delete`;
 const GET_AGENT_ACTION = `${AGENTS_ACTION_PREFIX}/get`;
 const GET_MESSAGES_ACTION = `${MEMORY_ACTION_PREFIX}/getMessages`;
 const GET_TRACES_ACTION = `${MEMORY_ACTION_PREFIX}/getTraces`;
@@ -134,6 +135,24 @@ export const getTask = createAsyncThunk(
   }
 );
 
+export const deleteTask = createAsyncThunk(
+  DELETE_TASK_ACTION,
+  async (
+    { taskId, dataSourceId }: { taskId: string; dataSourceId?: string },
+    { rejectWithValue }
+  ) => {
+    const response: any | HttpFetchError = await getRouteService().deleteTask(
+      taskId,
+      dataSourceId
+    );
+    if (response instanceof HttpFetchError) {
+      return rejectWithValue('Error deleting task: ' + response.body.message);
+    } else {
+      return response;
+    }
+  }
+);
+
 export const getAgent = createAsyncThunk(
   GET_AGENT_ACTION,
   async (
@@ -217,6 +236,10 @@ const mlSlice = createSlice({
         state.loading = true;
         state.errorMessage = '';
       })
+      .addCase(deleteTask.pending, (state, action) => {
+        state.loading = true;
+        state.errorMessage = '';
+      })
       .addCase(getAgent.pending, (state, action) => {
         state.loading = true;
         state.errorMessage = '';
@@ -254,6 +277,10 @@ const mlSlice = createSlice({
         state.loading = false;
         state.errorMessage = '';
       })
+      .addCase(deleteTask.fulfilled, (state, action) => {
+        state.loading = false;
+        state.errorMessage = '';
+      })
       .addCase(getAgent.fulfilled, (state, action) => {
         state.loading = false;
         state.errorMessage = '';
@@ -284,6 +311,10 @@ const mlSlice = createSlice({
         state.loading = false;
       })
       .addCase(getTask.rejected, (state, action) => {
+        state.errorMessage = action.payload as string;
+        state.loading = false;
+      })
+      .addCase(deleteTask.rejected, (state, action) => {
         state.errorMessage = action.payload as string;
         state.loading = false;
       })

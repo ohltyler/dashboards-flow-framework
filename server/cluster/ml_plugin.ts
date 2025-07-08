@@ -76,6 +76,20 @@ export function mlPlugin(Client: any, config: any, components: any) {
     method: 'GET',
   });
 
+  mlClient.deleteTask = ca({
+    url: {
+      fmt: `${ML_TASKS_ROUTE_PREFIX}/<%=task_id%>`,
+      req: {
+        task_id: {
+          type: 'string',
+          required: true,
+        },
+      },
+    },
+    needBody: false,
+    method: 'DELETE',
+  });
+
   mlClient.getAgent = ca({
     url: {
       fmt: `${ML_AGENT_ROUTE_PREFIX}/<%=agent_id%>`,

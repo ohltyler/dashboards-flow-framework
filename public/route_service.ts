@@ -150,6 +150,10 @@ export interface RouteService {
     taskId: string,
     dataSourceId?: string
   ) => Promise<any | HttpFetchError>;
+  deleteTask: (
+    taskId: string,
+    dataSourceId?: string
+  ) => Promise<any | HttpFetchError>;
   getAgent: (
     agentId: string,
     dataSourceId?: string
@@ -509,6 +513,17 @@ export function configureRoutes(core: CoreStart): RouteService {
           ? `${BASE_NODE_API_PATH}/${dataSourceId}/task/${taskId}`
           : `${BASE_TASK_NODE_API_PATH}/${taskId}`;
         const response = await core.http.get<{ respString: string }>(url);
+        return response;
+      } catch (e: any) {
+        return e as HttpFetchError;
+      }
+    },
+    deleteTask: async (taskId: string, dataSourceId?: string) => {
+      try {
+        const url = dataSourceId
+          ? `${BASE_NODE_API_PATH}/${dataSourceId}/task/${taskId}`
+          : `${BASE_TASK_NODE_API_PATH}/${taskId}`;
+        const response = await core.http.delete<{ respString: string }>(url);
         return response;
       } catch (e: any) {
         return e as HttpFetchError;
