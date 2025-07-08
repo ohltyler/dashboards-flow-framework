@@ -253,11 +253,19 @@ export enum TOOL_TYPE {
   INDEX_MAPPING = 'IndexMappingTool',
   LIST_INDEX = 'ListIndexTool',
   SEARCH_INDEX = 'SearchIndexTool',
+  SEARCH_ANOMALY_DETECTORS_TOOL = 'SearchAnomalyDetectorsTool',
+  SEARCH_ANOMALY_RESULTS_TOOL = 'SearchAnomalyResultsTool',
+  SEARCH_MONITORS_TOOL = 'SearchMonitorsTool',
+  SEARCH_ALERTS_TOOL = 'SearchAlertsTool',
 }
 export const TOOL_DESCRIPTIONS = {
   [TOOL_TYPE.INDEX_MAPPING]: 'Get index mappings.',
   [TOOL_TYPE.LIST_INDEX]: 'List indices in the cluster.',
   [TOOL_TYPE.SEARCH_INDEX]: 'Search an index.',
+  [TOOL_TYPE.SEARCH_ANOMALY_DETECTORS_TOOL]: 'Search for anomaly detectors.',
+  [TOOL_TYPE.SEARCH_ANOMALY_RESULTS_TOOL]: 'Search for anomaly results.',
+  [TOOL_TYPE.SEARCH_MONITORS_TOOL]: 'Search for alerting monitors.',
+  [TOOL_TYPE.SEARCH_ALERTS_TOOL]: 'Search for alerts.',
 };
 
 export enum MODEL_TYPE {
@@ -318,6 +326,14 @@ export const ML_INTERFACE_LINK =
   'https://docs.opensearch.org/docs/latest/ml-commons-plugin/api/model-apis/register-model/#the-interface-parameter';
 export const EXTERNAL_MCP_CONNECTOR_LINK =
   'https://docs.opensearch.org/docs/latest/ml-commons-plugin/agents-tools/mcp/mcp-connector/';
+export const EXECUTE_AGENT_LINK =
+  'https://docs.opensearch.org/docs/latest/ml-commons-plugin/api/agent-apis/execute-agent/';
+export const ML_COMMONS_TASK_LINK =
+  'https://docs.opensearch.org/docs/latest/ml-commons-plugin/api/tasks-apis/get-task/';
+export const ML_COMMONS_MESSAGES_LINK =
+  'https://docs.opensearch.org/docs/latest/ml-commons-plugin/api/memory-apis/get-message/';
+export const ML_COMMONS_TRACES_LINK =
+  'https://docs.opensearch.org/docs/latest/ml-commons-plugin/api/memory-apis/get-message-traces/';
 export const TEXT_CHUNKING_PROCESSOR_LINK =
   'https://opensearch.org/docs/latest/ingest-pipelines/processors/text-chunking/';
 export const CREATE_WORKFLOW_LINK =

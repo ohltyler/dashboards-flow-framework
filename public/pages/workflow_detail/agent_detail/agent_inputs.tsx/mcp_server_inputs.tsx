@@ -61,7 +61,7 @@ export function MCPServerInputs(props: MCPServerInputsProps) {
             body={
               <>
                 <EuiText size="s">
-                  To create connectors to external MCP servers, see the{' '}
+                  To integrate with external MCP servers, see the{' '}
                   <EuiLink href={EXTERNAL_MCP_CONNECTOR_LINK}>
                     documentation
                   </EuiLink>
