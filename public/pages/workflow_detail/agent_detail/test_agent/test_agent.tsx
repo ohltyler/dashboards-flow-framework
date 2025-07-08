@@ -249,8 +249,7 @@ export function TestAgent(props: TestAgentProps) {
       className="workspace-panel"
       borderRadius="l"
       style={{
-        paddingBottom: '48px',
-        marginRight: '0px',
+        marginRight: '12px',
       }}
     >
       {agentFlyoutOpen && (
@@ -424,7 +423,7 @@ export function TestAgent(props: TestAgentProps) {
         style={{
           height: '100%',
           gap: '16px',
-          paddingBottom: '36px',
+          paddingBottom: '40px',
         }}
       >
         <EuiFlexItem grow={false} className="left-nav-scroll">
@@ -481,9 +480,9 @@ export function TestAgent(props: TestAgentProps) {
                 disabled={false}
               />
             </EuiFlexItem>
-            <EuiFlexItem grow={false}>
+            <EuiFlexItem grow={false} style={{ marginTop: '0px' }}>
               <EuiFlexGroup direction="row" gutterSize="xs">
-                <EuiFlexItem grow={false} style={{ marginTop: '0px' }}>
+                <EuiFlexItem grow={false}>
                   <EuiSmallButton
                     fill={false}
                     disabled={isEmpty(agentId) || isEmpty(executeInput)}
@@ -523,7 +522,10 @@ export function TestAgent(props: TestAgentProps) {
                   </EuiSmallButton>
                 </EuiFlexItem>
                 {taskInProgress && (
-                  <EuiFlexItem grow={false} style={{ marginLeft: '8px' }}>
+                  <EuiFlexItem
+                    grow={false}
+                    style={{ marginLeft: '8px', marginTop: '4px' }}
+                  >
                     <EuiLoadingSpinner size="l" />
                   </EuiFlexItem>
                 )}

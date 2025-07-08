@@ -5,8 +5,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { isEmpty, isEqual, sortBy } from 'lodash';
-import { getIn, useFormikContext } from 'formik';
+import { isEqual, sortBy } from 'lodash';
+import { useFormikContext } from 'formik';
 import {
   EuiFlexGroup,
   EuiFlexItem,
@@ -249,7 +249,6 @@ export function AgentInputs(props: AgentInputsProps) {
           className="workspace-panel"
           borderRadius="l"
           style={{
-            paddingBottom: '48px',
             marginRight: '0px',
           }}
         >
@@ -353,7 +352,8 @@ export function AgentInputs(props: AgentInputsProps) {
                     gutterSize="s"
                     style={{
                       padding: '0px',
-                      marginBottom: USE_NEW_HOME_PAGE ? '0px' : '48px',
+                      marginBottom: USE_NEW_HOME_PAGE ? '12px' : '54px',
+                      marginTop: '-12px',
                     }}
                   >
                     <EuiFlexItem grow={false}>
