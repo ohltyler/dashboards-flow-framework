@@ -51,7 +51,6 @@ import { sanitizeJSONPath } from './utils';
  */
 
 const AGENT_TEMPLATE_NODE_ID = 'agent';
-const DEFAULT_AGENT_NAME = 'default_agent';
 
 export function configToTemplateFlows(
   config: WorkflowConfig,
@@ -605,9 +604,9 @@ function agentUIConfigToAgentConfig(
   agentUIConfig: AgentUIConfig
 ): Partial<AgentConfig> {
   return {
-    name: DEFAULT_AGENT_NAME,
+    name: agentUIConfig.name.value,
+    description: agentUIConfig.description.value,
     type: agentUIConfig.type.value,
-    description: '',
     llm: JSON.stringify({
       model_id: agentUIConfig.llm?.value?.id,
       // TODO: this should be dynamic

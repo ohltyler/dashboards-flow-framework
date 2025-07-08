@@ -109,6 +109,8 @@ export type MCPServerConfig = {
 export type MCPServersConfig = MCPServerConfig[];
 
 export type AgentUIConfig = {
+  name: IConfigField;
+  description: IConfigField;
   type: IConfigField;
   llm: IConfigField;
   mcpServers: MCPServersConfig;

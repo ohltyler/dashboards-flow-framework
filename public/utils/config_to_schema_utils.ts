@@ -141,6 +141,11 @@ function processorsConfigToSchema(processorsConfig: ProcessorsConfig): Schema {
 
 function agentUIConfigToSchema(agentUIConfig: AgentUIConfig): Schema {
   const agentSchemaObj = {} as { [key: string]: Schema };
+  agentSchemaObj['name'] = getFieldSchema(agentUIConfig.name);
+  agentSchemaObj['description'] = getFieldSchema(
+    agentUIConfig.description,
+    true
+  );
   agentSchemaObj['type'] = getFieldSchema(agentUIConfig.type);
   agentSchemaObj['llm'] = getFieldSchema(agentUIConfig.llm);
   agentSchemaObj['llmInterface'] = getFieldSchema(agentUIConfig.llmInterface);
