@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   EuiFlexGroup,
   EuiFlexItem,
@@ -22,10 +22,12 @@ import { hasProvisionedAgentResources } from '../../../utils';
 interface AgentDetailProps {
   workflow: Workflow;
   uiConfig: WorkflowConfig | undefined;
+  setUiConfig: (uiConfig: WorkflowConfig) => void;
 }
 
 export function AgentDetail(props: AgentDetailProps) {
   const agentProvisioned = hasProvisionedAgentResources(props.workflow);
+  const [unsavedChanges, setUnsavedChanges] = useState<boolean>(false);
 
   return (
     <EuiPanel
@@ -40,11 +42,20 @@ export function AgentDetail(props: AgentDetailProps) {
       {props.uiConfig !== undefined ? (
         <EuiFlexGroup direction="row" className="stretch-absolute">
           <EuiFlexItem grow={5}>
-            <AgentInputs workflow={props.workflow} uiConfig={props.uiConfig} />
+            <AgentInputs
+              workflow={props.workflow}
+              uiConfig={props.uiConfig}
+              setUiConfig={props.setUiConfig}
+              setUnsavedChanges={setUnsavedChanges}
+            />
           </EuiFlexItem>
           {agentProvisioned && (
             <EuiFlexItem grow={5}>
-              <TestAgent workflow={props.workflow} uiConfig={props.uiConfig} />
+              <TestAgent
+                workflow={props.workflow}
+                uiConfig={props.uiConfig}
+                unsavedChanges={unsavedChanges}
+              />
             </EuiFlexItem>
           )}
         </EuiFlexGroup>
