@@ -21,7 +21,7 @@ import {
   WorkflowConfig,
   WorkflowFormValues,
 } from '../../../../../common';
-import { NumberField, SelectField } from '../../component_input';
+import { NumberField, SelectField, TextField } from '../../component_input';
 import { AppState } from '../../../../store';
 
 interface AdvancedSettingsInputsProps {
@@ -59,6 +59,16 @@ export function AdvancedSettingsInputs(props: AdvancedSettingsInputsProps) {
       <EuiSpacer size="s" />
       <EuiPanel>
         <EuiFlexGroup direction="column" gutterSize="s">
+          <EuiFlexItem grow={false}>
+            <TextField fieldPath="agent.name" label="Agent name" />
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <TextField
+              fieldPath="agent.description"
+              label="Agent description"
+              textArea={true}
+            />
+          </EuiFlexItem>
           <EuiFlexItem grow={false}>
             <SelectField
               label="LLM Interface"

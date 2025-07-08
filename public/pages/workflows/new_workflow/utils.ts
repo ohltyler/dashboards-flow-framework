@@ -345,6 +345,16 @@ export function fetchComplexChatbotMetadata(): UIState {
 
 function fetchDefaultAgentUIConfig() {
   return {
+    name: {
+      id: 'name',
+      type: 'string',
+      value: 'my_agent',
+    },
+    description: {
+      id: 'description',
+      type: 'string',
+      value: '',
+    },
     type: {
       id: 'type',
       type: 'select',

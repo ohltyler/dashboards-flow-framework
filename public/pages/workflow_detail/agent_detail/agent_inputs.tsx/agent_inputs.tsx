@@ -288,34 +288,6 @@ export function AgentInputs(props: AgentInputsProps) {
                       gap: '4px',
                     }}
                   >
-                    {/* <EuiFlexItem grow={false}>
-                  <EuiCompressedFormRow label="Name">
-                    <EuiFieldText
-                      disabled={false}
-                      value={formInputs.name}
-                      onChange={(e) => {
-                        setFormInputs({
-                          ...formInputs,
-                          name: e.target.value,
-                        });
-                      }}
-                    />
-                  </EuiCompressedFormRow>
-                </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  <EuiCompressedFormRow label="Description">
-                    <EuiTextArea
-                      disabled={false}
-                      value={formInputs.description}
-                      onChange={(e) => {
-                        setFormInputs({
-                          ...formInputs,
-                          description: e.target.value,
-                        });
-                      }}
-                    />
-                  </EuiCompressedFormRow>
-                </EuiFlexItem> */}
                     <EuiFlexItem grow={false}>
                       <SelectField
                         field={props.uiConfig.agent?.type}

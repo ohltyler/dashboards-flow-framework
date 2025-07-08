@@ -148,6 +148,8 @@ function formikToAgentUiConfig(
   agentFormValues: FormikValues,
   existingConfig: AgentUIConfig
 ): AgentUIConfig {
+  existingConfig['name'].value = agentFormValues['name'];
+  existingConfig['description'].value = agentFormValues['description'];
   existingConfig['type'].value = agentFormValues['type'];
   existingConfig['llm'].value = agentFormValues['llm'];
   existingConfig['tools'] = agentFormValues['tools'];
