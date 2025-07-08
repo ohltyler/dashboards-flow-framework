@@ -300,7 +300,11 @@ export function WorkflowDetail(props: WorkflowDetailProps) {
                 >
                   <EuiFlexItem>
                     {isAgentUseCase(workflow?.ui_metadata?.type) ? (
-                      <AgentDetail workflow={workflow} uiConfig={uiConfig} />
+                      <AgentDetail
+                        workflow={workflow}
+                        uiConfig={uiConfig}
+                        setUiConfig={setUiConfig}
+                      />
                     ) : (
                       <ResizableWorkspace
                         workflow={workflow}

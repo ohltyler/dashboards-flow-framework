@@ -56,6 +56,7 @@ import '../../../../global-styles.scss';
 interface TestAgentProps {
   workflow: Workflow;
   uiConfig: WorkflowConfig | undefined;
+  unsavedChanges: boolean;
 }
 
 const REFRESH_RATE_MILLIS = 2000; // how often to fetch task updates during async execution
@@ -419,8 +420,18 @@ export function TestAgent(props: TestAgentProps) {
       <EuiFlexGroup direction="column" gutterSize="xs">
         <EuiFlexItem grow={5}>
           <EuiFlexGroup direction="column">
+            {props.unsavedChanges && (
+              <EuiFlexItem grow={false} style={{ marginBottom: '0px' }}>
+                <EuiCallOut
+                  size="s"
+                  iconType={'alert'}
+                  color="warning"
+                  title="Unsaved configuration changes detected"
+                />
+              </EuiFlexItem>
+            )}
             {!isEmpty(taskError) && (
-              <EuiFlexItem grow={true}>
+              <EuiFlexItem grow={false}>
                 <EuiCallOut
                   size="s"
                   iconType={'alert'}
@@ -505,18 +516,6 @@ export function TestAgent(props: TestAgentProps) {
                 {taskInProgress && (
                   <EuiFlexItem grow={false} style={{ marginLeft: '8px' }}>
                     <EuiLoadingSpinner size="l" />
-                  </EuiFlexItem>
-                )}
-                {taskInProgress && (
-                  <EuiFlexItem grow={false} style={{ marginLeft: '6px' }}>
-                    <EuiButtonIcon
-                      iconSize="l"
-                      iconType="refresh"
-                      aria-label="refresh"
-                      onClick={async () => {
-                        refreshTaskExecution();
-                      }}
-                    />
                   </EuiFlexItem>
                 )}
               </EuiFlexGroup>

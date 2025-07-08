@@ -15,6 +15,7 @@ import {
   EuiPanel,
   EuiHorizontalRule,
   EuiLoadingSpinner,
+  EuiSmallButtonIcon,
 } from '@elastic/eui';
 import {
   Workflow,
@@ -52,6 +53,8 @@ import '../../../../global-styles.scss';
 interface AgentInputsProps {
   workflow: Workflow;
   uiConfig: WorkflowConfig | undefined;
+  setUiConfig: (uiConfig: WorkflowConfig) => void;
+  setUnsavedChanges: (unsavedChanges: boolean) => void;
 }
 
 // non-ui-config inputs, like name/description
@@ -70,6 +73,7 @@ export function AgentInputs(props: AgentInputsProps) {
     setTouched,
     submitForm,
     validateForm,
+    resetForm,
   } = useFormikContext<WorkflowFormValues>();
 
   const { loading } = useSelector((state: AppState) => state.workflows);
@@ -95,6 +99,8 @@ export function AgentInputs(props: AgentInputsProps) {
   const [templateNodesDifferent, setTemplateNodesDifferent] = useState<boolean>(
     false
   );
+  const allChangesSaved =
+    !templateNodesDifferent || (!dirty && agentProvisioned);
 
   // for any form changes, check if it would produce a new template.
   // this is so we can dynamically enable/disable the create/update buttons if applicable.
@@ -131,12 +137,9 @@ export function AgentInputs(props: AgentInputsProps) {
     props.workflow,
   ]);
 
-  // TODO: derive the LLM interface based on the model, if applicable
   useEffect(() => {
-    if (!isEmpty(getIn(values, 'agent.llm'))) {
-      // TODO
-    }
-  }, [getIn(values, 'agent.llm')]);
+    props.setUnsavedChanges(!allChangesSaved);
+  }, [allChangesSaved]);
 
   // Utility fn to validate the form and update the workflow if valid
   async function validateAndUpdateWorkflow(
@@ -226,6 +229,14 @@ export function AgentInputs(props: AgentInputsProps) {
       });
 
     return success;
+  }
+
+  // Utility fn to revert any unsaved changes, reset the form
+  function revertUnsavedChanges(): void {
+    resetForm();
+    if (props.workflow?.ui_metadata?.config !== undefined) {
+      props.setUiConfig(props.workflow?.ui_metadata?.config);
+    }
   }
 
   return (
@@ -349,19 +360,34 @@ export function AgentInputs(props: AgentInputsProps) {
                       <EuiFlexGroup direction="row">
                         <EuiFlexItem grow={false}>
                           <EuiSmallButton
-                            fill={false}
-                            disabled={
-                              !templateNodesDifferent ||
-                              (!dirty && agentProvisioned)
-                            }
+                            fill={true}
+                            disabled={allChangesSaved}
                             isLoading={isLoading}
                             onClick={async () => {
                               await validateAndUpdateWorkflow(agentProvisioned);
                             }}
                           >
-                            {agentProvisioned ? 'Update' : 'Create'}
+                            {isLoading
+                              ? 'Updating'
+                              : agentProvisioned
+                              ? 'Update'
+                              : 'Create'}
                           </EuiSmallButton>
                         </EuiFlexItem>
+                        {!allChangesSaved && agentProvisioned && (
+                          <EuiFlexItem
+                            grow={false}
+                            style={{ marginLeft: '0px' }}
+                          >
+                            <EuiSmallButtonIcon
+                              iconType={'editorUndo'}
+                              aria-label="undo"
+                              iconSize="l"
+                              isDisabled={isLoading}
+                              onClick={() => revertUnsavedChanges()}
+                            />
+                          </EuiFlexItem>
+                        )}
                       </EuiFlexGroup>
                     </EuiFlexItem>
                   </EuiFlexGroup>
