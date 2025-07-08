@@ -417,8 +417,17 @@ export function TestAgent(props: TestAgentProps) {
           />
         </EuiFlexItem>
       </EuiFlexItem>
-      <EuiFlexGroup direction="column" gutterSize="xs">
-        <EuiFlexItem grow={5}>
+      <EuiFlexGroup
+        direction="column"
+        justifyContent="spaceBetween"
+        gutterSize="xs"
+        style={{
+          height: '100%',
+          gap: '16px',
+          paddingBottom: '36px',
+        }}
+      >
+        <EuiFlexItem grow={false} className="left-nav-scroll">
           <EuiFlexGroup direction="column">
             {props.unsavedChanges && (
               <EuiFlexItem grow={false} style={{ marginBottom: '0px' }}>
