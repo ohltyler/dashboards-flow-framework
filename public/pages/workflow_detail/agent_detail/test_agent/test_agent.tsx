@@ -216,6 +216,13 @@ export function TestAgent(props: TestAgentProps) {
     setTraces([]);
   }
 
+  function clearInteractionsState(): void {
+    stopTaskExecution().then(() => {
+      clearExecutionState();
+      setInteractions([]);
+    });
+  }
+
   async function refreshTaskExecution() {
     await dispatch(
       getTask({
@@ -230,24 +237,26 @@ export function TestAgent(props: TestAgentProps) {
       .catch((err) => {});
   }
   async function stopTaskExecution() {
-    await dispatch(
-      deleteTask({
-        taskId,
-        dataSourceId,
-      })
-    )
-      .unwrap()
-      .then((resp) => {})
-      .catch((err) => {})
-      .finally(() => {
-        setTaskId('');
-        clearExecutionState();
-        const interactionsCopy = cloneDeep(interactions);
-        const curInteraction = interactions[interactions.length - 1];
-        curInteraction.agentMsg = CANCELED_MSG;
-        interactionsCopy[interactions.length - 1] = curInteraction;
-        setInteractions(interactionsCopy);
-      });
+    if (!isEmpty(taskId)) {
+      await dispatch(
+        deleteTask({
+          taskId,
+          dataSourceId,
+        })
+      )
+        .unwrap()
+        .then((resp) => {})
+        .catch((err) => {})
+        .finally(() => {
+          setTaskId('');
+          clearExecutionState();
+          const interactionsCopy = cloneDeep(interactions);
+          const curInteraction = interactions[interactions.length - 1];
+          curInteraction.agentMsg = CANCELED_MSG;
+          interactionsCopy[interactions.length - 1] = curInteraction;
+          setInteractions(interactionsCopy);
+        });
+    }
   }
 
   // when a new agent response is generated (either error or output), update the interaction state
@@ -424,17 +433,32 @@ export function TestAgent(props: TestAgentProps) {
               <h3>Test</h3>
             </EuiTitle>
           </EuiFlexItem>
-          {!isEmpty(agentDetails) && (
-            <EuiFlexItem grow={false} style={{ marginTop: '16px' }}>
-              <EuiSmallButtonEmpty
-                onClick={() => {
-                  setAgentFlyoutOpen(true);
-                }}
-              >
-                View agent details
-              </EuiSmallButtonEmpty>
-            </EuiFlexItem>
-          )}
+          <EuiFlexItem grow={false}>
+            <EuiFlexGroup direction="row">
+              {!isEmpty(interactions) && (
+                <EuiFlexItem grow={false} style={{ marginTop: '16px' }}>
+                  <EuiSmallButtonEmpty
+                    onClick={() => {
+                      clearInteractionsState();
+                    }}
+                  >
+                    Clear chat history
+                  </EuiSmallButtonEmpty>
+                </EuiFlexItem>
+              )}
+              {!isEmpty(agentDetails) && (
+                <EuiFlexItem grow={false} style={{ marginTop: '16px' }}>
+                  <EuiSmallButtonEmpty
+                    onClick={() => {
+                      setAgentFlyoutOpen(true);
+                    }}
+                  >
+                    View agent details
+                  </EuiSmallButtonEmpty>
+                </EuiFlexItem>
+              )}
+            </EuiFlexGroup>
+          </EuiFlexItem>
         </EuiFlexGroup>
         <EuiFlexItem>
           <EuiHorizontalRule
@@ -527,31 +551,33 @@ export function TestAgent(props: TestAgentProps) {
                                    * For the latest/current interactions, show extra info, such as
                                    * any errors or execution traces.
                                    */}
-                                  {idx !== interactions.length - 1 ? (
-                                    formatAgentMsg(
-                                      getIn(interactions, `${idx}.agentMsg`, '')
-                                    )
-                                  ) : taskInProgress ? (
+                                  {idx === interactions.length - 1 &&
+                                  taskInProgress ? (
                                     <EuiLoadingSpinner size="l" />
-                                  ) : taskError ? (
-                                    <EuiSmallButtonEmpty
-                                      style={{
-                                        margin: '0px',
-                                        padding: '0px',
-                                      }}
-                                      color="danger"
-                                      onClick={() =>
-                                        setTaskErrorFlyoutOpen(true)
-                                      }
-                                    >
-                                      {FAILED_MSG}
-                                    </EuiSmallButtonEmpty>
                                   ) : (
                                     formatAgentMsg(
                                       getIn(interactions, `${idx}.agentMsg`, '')
                                     )
                                   )}
                                 </EuiPanel>
+                                {idx === interactions.length - 1 &&
+                                  !isEmpty(taskError) && (
+                                    <EuiSmallButtonEmpty
+                                      style={{
+                                        marginLeft: '-4px',
+                                        marginRight: '12px',
+                                        marginTop: '-4px',
+                                        marginBottom: '-4px',
+                                      }}
+                                      onClick={async () => {
+                                        setTaskErrorFlyoutOpen(true);
+                                      }}
+                                    >
+                                      <EuiText size="xs" color="danger">
+                                        View failure
+                                      </EuiText>
+                                    </EuiSmallButtonEmpty>
+                                  )}
                                 {idx === interactions.length - 1 &&
                                   taskInProgress && (
                                     <EuiSmallButtonEmpty
