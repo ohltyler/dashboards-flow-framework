@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { isEmpty } from 'lodash';
+import { cloneDeep, isEmpty } from 'lodash';
 import { getIn } from 'formik';
 import {
   EuiFlexGroup,
@@ -25,6 +25,7 @@ import {
   EuiLink,
   EuiSpacer,
   EuiButtonIcon,
+  EuiLoadingSpinner,
 } from '@elastic/eui';
 import {
   customStringify,
@@ -56,6 +57,11 @@ interface TestAgentProps {
   workflow: Workflow;
   uiConfig: WorkflowConfig | undefined;
   unsavedChanges: boolean;
+}
+
+interface Interaction {
+  userMsg: string;
+  agentMsg: string;
 }
 
 const REFRESH_RATE_MILLIS = 2000; // how often to fetch task updates during async execution
@@ -108,7 +114,6 @@ export function TestAgent(props: TestAgentProps) {
 
   const [executeInput, setExecuteInput] = useState<string>('');
   const [executeOutput, setExecuteOutput] = useState<string>('{}');
-  const [executeError, setExecuteError] = useState<string>('');
   const [taskId, setTaskId] = useState<string>('');
   const [taskResponse, setTaskResponse] = useState<any>(undefined);
   const taskState = taskResponse?.state as TASK_STATE | undefined;
@@ -120,7 +125,7 @@ export function TestAgent(props: TestAgentProps) {
 
   // conversation-related state
   // TODO: persist agent responses as well.
-  const [userMsgs, setUserMsgs] = useState<string[]>([]);
+  const [interactions, setInteractions] = useState<Interaction[]>([]);
 
   // auto-refresh to fetch the latest task state, if the task is set in progress.
   // stop refreshing once the task is in a completed state (failed or completed)
@@ -210,7 +215,6 @@ export function TestAgent(props: TestAgentProps) {
   function clearExecutionState(): void {
     setExecuteOutput('');
     setTaskResponse('');
-    setExecuteError('');
     setMessages([]);
     setTraces([]);
   }
@@ -243,6 +247,25 @@ export function TestAgent(props: TestAgentProps) {
         clearExecutionState();
       });
   }
+
+  // when a new agent response is generated (either error or output), update the interaction state
+  useEffect(() => {
+    if (!taskInProgress && !isEmpty(taskResponse)) {
+      let finalAgentMsg = '';
+      if (!isEmpty(taskError)) {
+        finalAgentMsg = 'Execution failed';
+      } else {
+        finalAgentMsg = getModelResponseFromTask(taskResponse);
+      }
+      const interactionsCopy = cloneDeep(interactions);
+      const curInteraction = interactions[interactions.length - 1];
+      curInteraction.agentMsg = finalAgentMsg;
+      interactionsCopy[interactions.length - 1] = curInteraction;
+      setInteractions(interactionsCopy);
+    }
+  }, [taskInProgress]);
+
+  console.log('interactions: ', interactions);
 
   return (
     <EuiPanel
@@ -452,19 +475,92 @@ export function TestAgent(props: TestAgentProps) {
           >
             <EuiFlexGroup direction="column">
               <EuiFlexItem grow={false}>
-                <EuiFlexGroup direction="row">
-                  <EuiFlexItem grow={2}></EuiFlexItem>
-                  <EuiFlexItem grow={8}>
-                    <EuiFlexGroup direction-="row">
-                      <EuiFlexItem></EuiFlexItem>
-                      <EuiFlexItem grow={false}>
-                        <EuiText size="s">
-                          {getIn(userMsgs, '0', 'sample msg')}
-                        </EuiText>
-                      </EuiFlexItem>
-                    </EuiFlexGroup>
-                  </EuiFlexItem>
-                </EuiFlexGroup>
+                {interactions.map((interaction, idx) => {
+                  return (
+                    <>
+                      <EuiFlexGroup direction="row">
+                        <EuiFlexItem grow={2}></EuiFlexItem>
+                        <EuiFlexItem grow={8}>
+                          <EuiFlexGroup direction="row">
+                            <EuiFlexItem></EuiFlexItem>
+                            <EuiFlexItem grow={false}>
+                              <EuiFlexGroup
+                                direction="column"
+                                gutterSize="xs"
+                                alignItems="flexEnd"
+                              >
+                                <EuiFlexItem grow={false}>
+                                  <EuiText size="xs" color="subdued">
+                                    User
+                                  </EuiText>
+                                </EuiFlexItem>
+                                <EuiPanel borderRadius="l" color="plain">
+                                  <EuiText size="s">
+                                    {getIn(interactions, `${idx}.userMsg`, '')}
+                                  </EuiText>
+                                </EuiPanel>
+                              </EuiFlexGroup>
+                            </EuiFlexItem>
+                          </EuiFlexGroup>
+                        </EuiFlexItem>
+                      </EuiFlexGroup>
+                      <EuiFlexGroup direction="row">
+                        <EuiFlexItem grow={8}>
+                          <EuiFlexGroup direction="row">
+                            <EuiFlexItem grow={false}>
+                              <EuiFlexGroup
+                                direction="column"
+                                gutterSize="xs"
+                                alignItems="flexStart"
+                              >
+                                <EuiFlexItem grow={false}>
+                                  <EuiText size="xs" color="subdued">
+                                    Agent
+                                  </EuiText>
+                                </EuiFlexItem>
+                                <EuiPanel borderRadius="l" color="plain">
+                                  {idx !== interactions.length - 1 ? (
+                                    <EuiText size="s">
+                                      {getIn(
+                                        interactions,
+                                        `${idx}.agentMsg`,
+                                        ''
+                                      )}
+                                    </EuiText>
+                                  ) : taskInProgress ? (
+                                    <EuiLoadingSpinner size="l" />
+                                  ) : taskError ? (
+                                    <EuiSmallButtonEmpty
+                                      style={{
+                                        margin: '0px',
+                                        padding: '0px',
+                                      }}
+                                      color="danger"
+                                      onClick={() =>
+                                        setTaskErrorFlyoutOpen(true)
+                                      }
+                                    >
+                                      Execution failed
+                                    </EuiSmallButtonEmpty>
+                                  ) : (
+                                    <EuiText size="s">
+                                      {getIn(
+                                        interactions,
+                                        `${idx}.agentMsg`,
+                                        ''
+                                      )}
+                                    </EuiText>
+                                  )}
+                                </EuiPanel>
+                              </EuiFlexGroup>
+                            </EuiFlexItem>
+                          </EuiFlexGroup>
+                        </EuiFlexItem>
+                        <EuiFlexItem grow={2}></EuiFlexItem>
+                      </EuiFlexGroup>
+                    </>
+                  );
+                })}
               </EuiFlexItem>
               <EuiFlexItem></EuiFlexItem>
               <EuiFlexItem grow={false}>
@@ -486,7 +582,7 @@ export function TestAgent(props: TestAgentProps) {
                           resize="none"
                         />
                       </EuiFlexItem>
-                      <EuiFlexItem grow={false} style={{ marginTop: '44px' }}>
+                      <EuiFlexItem grow={false} style={{ marginTop: '46px' }}>
                         <EuiSmallButton
                           fill={true}
                           style={{ borderRadius: '12px' }}
@@ -501,7 +597,13 @@ export function TestAgent(props: TestAgentProps) {
                           color="primary"
                           isLoading={false}
                           onClick={async () => {
-                            setUserMsgs([...userMsgs, executeInput]);
+                            setInteractions([
+                              ...interactions,
+                              {
+                                userMsg: executeInput,
+                                agentMsg: '',
+                              },
+                            ]);
                             await dispatch(
                               executeAgent({
                                 agentId,
@@ -516,8 +618,9 @@ export function TestAgent(props: TestAgentProps) {
                                 setTaskId(resp?.task_id || '');
                                 clearExecutionState();
                               })
-                              .catch((err) => {
-                                setExecuteError(err);
+                              .catch((err) => {})
+                              .finally(() => {
+                                setExecuteInput('');
                               });
                           }}
                         >
@@ -561,18 +664,6 @@ export function TestAgent(props: TestAgentProps) {
                 </EuiCallOut>
               </EuiFlexItem>
             )}
-            {!isEmpty(executeError) && (
-              <EuiFlexItem grow={false}>
-                <EuiCallOut
-                  size="s"
-                  iconType="alert"
-                  color="danger"
-                  title="Execution failed"
-                >
-                  {executeError}
-                </EuiCallOut>
-              </EuiFlexItem>
-            )}
             <EuiFlexItem grow={false}>
               <EuiCompressedTextArea
                 fullWidth={true}
@@ -611,17 +702,14 @@ export function TestAgent(props: TestAgentProps) {
                             setTaskId(resp?.task_id || '');
                             clearExecutionState();
                           })
-                          .catch((err) => {
-                            setExecuteError(err);
-                          });
+                          .catch((err) => {});
                       }
                     }}
                   >
                     {taskInProgress
                       ? 'Cancel'
                       : !isEmpty(executeOutput) ||
-                        !isEmpty(taskError) ||
-                        !isEmpty(executeError)
+                        !isEmpty(taskError)
                       ? 'Re-run'
                       : 'Run'}
                   </EuiSmallButton>
