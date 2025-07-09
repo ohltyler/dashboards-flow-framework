@@ -25,7 +25,6 @@ import {
   EuiLink,
   EuiSpacer,
   EuiButtonIcon,
-  EuiLoadingSpinner,
 } from '@elastic/eui';
 import {
   customStringify,
@@ -118,6 +117,10 @@ export function TestAgent(props: TestAgentProps) {
     !isEmpty(taskId) &&
     taskState !== TASK_STATE.COMPLETED &&
     taskState !== TASK_STATE.FAILED;
+
+  // conversation-related state
+  // TODO: persist agent responses as well.
+  const [userMsgs, setUserMsgs] = useState<string[]>([]);
 
   // auto-refresh to fetch the latest task state, if the task is set in progress.
   // stop refreshing once the task is in a completed state (failed or completed)
@@ -300,7 +303,7 @@ export function TestAgent(props: TestAgentProps) {
             </EuiFlexGroup>
           </EuiFlyoutHeader>
           <EuiFlyoutBody>
-            <EuiText color="subdued">
+            <EuiText color="subdued" size="s">
               Each agent execution produces several resources to aid in
               debugging and user understanding.{' '}
               <EuiLink href={EXECUTE_AGENT_LINK} target="_blank">
@@ -416,17 +419,119 @@ export function TestAgent(props: TestAgentProps) {
           />
         </EuiFlexItem>
       </EuiFlexItem>
-      <EuiFlexGroup
-        direction="column"
-        justifyContent="spaceBetween"
-        gutterSize="xs"
+      {props.unsavedChanges && (
+        <EuiFlexItem grow={false}>
+          <EuiCallOut
+            size="s"
+            iconType={'alert'}
+            color="warning"
+            title="Unsaved configuration changes detected"
+          />
+        </EuiFlexItem>
+      )}
+      <EuiFlexItem
+        className="left-nav-scroll"
+        grow={true}
         style={{
-          height: '100%',
-          gap: '16px',
-          paddingBottom: '40px',
+          // unsaved changes adds a callout, so we need to factor it in when determining total height
+          height: props.unsavedChanges
+            ? 'calc(100% - 96px)'
+            : 'calc(100% - 56px)',
         }}
       >
-        <EuiFlexItem grow={false} className="left-nav-scroll">
+        <EuiPanel
+          borderRadius="xl"
+          hasBorder={false}
+          color="subdued"
+          paddingSize="s"
+        >
+          <EuiFlexItem
+            style={{
+              height: '100%',
+            }}
+          >
+            <EuiFlexGroup direction="column">
+              <EuiFlexItem grow={false}>
+                <EuiFlexGroup direction="row">
+                  <EuiFlexItem grow={2}></EuiFlexItem>
+                  <EuiFlexItem grow={8}>
+                    <EuiFlexGroup direction-="row">
+                      <EuiFlexItem></EuiFlexItem>
+                      <EuiFlexItem grow={false}>
+                        <EuiText size="s">
+                          {getIn(userMsgs, '0', 'sample msg')}
+                        </EuiText>
+                      </EuiFlexItem>
+                    </EuiFlexGroup>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
+              </EuiFlexItem>
+              <EuiFlexItem></EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiFlexGroup direction="row">
+                  <EuiFlexItem grow={2}></EuiFlexItem>
+                  <EuiFlexItem grow={8}>
+                    <EuiFlexGroup direction="row" gutterSize="s">
+                      <EuiFlexItem>
+                        <EuiCompressedTextArea
+                          style={{ borderRadius: '12px' }}
+                          fullWidth={true}
+                          placeholder={'Ask a question'}
+                          value={executeInput}
+                          onChange={(e) => {
+                            setExecuteInput(e.target.value);
+                          }}
+                          isInvalid={false}
+                          disabled={false}
+                          resize="none"
+                        />
+                      </EuiFlexItem>
+                      <EuiFlexItem grow={false} style={{ marginTop: '44px' }}>
+                        <EuiSmallButton
+                          fill={true}
+                          style={{ borderRadius: '12px' }}
+                          aria-label="sendMessageButton"
+                          iconType="returnKey"
+                          iconSide="right"
+                          disabled={
+                            isEmpty(agentId) ||
+                            isEmpty(executeInput) ||
+                            taskInProgress
+                          }
+                          color="primary"
+                          isLoading={false}
+                          onClick={async () => {
+                            setUserMsgs([...userMsgs, executeInput]);
+                            await dispatch(
+                              executeAgent({
+                                agentId,
+                                apiBody: customStringify({
+                                  parameters: { question: executeInput },
+                                }),
+                                dataSourceId,
+                              })
+                            )
+                              .unwrap()
+                              .then((resp) => {
+                                setTaskId(resp?.task_id || '');
+                                clearExecutionState();
+                              })
+                              .catch((err) => {
+                                setExecuteError(err);
+                              });
+                          }}
+                        >
+                          Send
+                        </EuiSmallButton>
+                      </EuiFlexItem>
+                    </EuiFlexGroup>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
+              </EuiFlexItem>
+            </EuiFlexGroup>
+          </EuiFlexItem>
+        </EuiPanel>
+        {/* <EuiFlexItem grow={true} className="left-nav-scroll">
           <EuiFlexGroup direction="column">
             {props.unsavedChanges && (
               <EuiFlexItem grow={false} style={{ marginBottom: '0px' }}>
@@ -561,8 +666,8 @@ export function TestAgent(props: TestAgentProps) {
               </EuiFlexItem>
             )}
           </EuiFlexGroup>
-        </EuiFlexItem>
-      </EuiFlexGroup>
+        </EuiFlexItem> */}
+      </EuiFlexItem>
     </EuiPanel>
   );
 }
