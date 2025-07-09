@@ -66,6 +66,9 @@ interface Interaction {
 
 const REFRESH_RATE_MILLIS = 2000; // how often to fetch task updates during async execution
 
+const FAILED_MSG = 'Execution failed';
+const CANCELED_MSG = 'Execution canceled';
+
 export function TestAgent(props: TestAgentProps) {
   const dispatch = useAppDispatch();
   const dataSourceId = getDataSourceId();
@@ -113,7 +116,6 @@ export function TestAgent(props: TestAgentProps) {
   }, [agentId]);
 
   const [executeInput, setExecuteInput] = useState<string>('');
-  const [executeOutput, setExecuteOutput] = useState<string>('{}');
   const [taskId, setTaskId] = useState<string>('');
   const [taskResponse, setTaskResponse] = useState<any>(undefined);
   const taskState = taskResponse?.state as TASK_STATE | undefined;
@@ -148,10 +150,6 @@ export function TestAgent(props: TestAgentProps) {
       }
     };
   }, [taskInProgress]);
-
-  useEffect(() => {
-    setExecuteOutput(getModelResponseFromTask(taskResponse));
-  }, [taskResponse]);
 
   // Fetch more sub-resource details (memory, messages, traces) once available
   const [messages, setMessages] = useState<any>([]);
@@ -213,7 +211,6 @@ export function TestAgent(props: TestAgentProps) {
     !isEmpty(taskResponse) || !isEmpty(messages) || !isEmpty(traces);
 
   function clearExecutionState(): void {
-    setExecuteOutput('');
     setTaskResponse('');
     setMessages([]);
     setTraces([]);
@@ -245,6 +242,11 @@ export function TestAgent(props: TestAgentProps) {
       .finally(() => {
         setTaskId('');
         clearExecutionState();
+        const interactionsCopy = cloneDeep(interactions);
+        const curInteraction = interactions[interactions.length - 1];
+        curInteraction.agentMsg = CANCELED_MSG;
+        interactionsCopy[interactions.length - 1] = curInteraction;
+        setInteractions(interactionsCopy);
       });
   }
 
@@ -253,7 +255,7 @@ export function TestAgent(props: TestAgentProps) {
     if (!taskInProgress && !isEmpty(taskResponse)) {
       let finalAgentMsg = '';
       if (!isEmpty(taskError)) {
-        finalAgentMsg = 'Execution failed';
+        finalAgentMsg = FAILED_MSG;
       } else {
         finalAgentMsg = getModelResponseFromTask(taskResponse);
       }
@@ -264,8 +266,6 @@ export function TestAgent(props: TestAgentProps) {
       setInteractions(interactionsCopy);
     }
   }, [taskInProgress]);
-
-  console.log('interactions: ', interactions);
 
   return (
     <EuiPanel
@@ -477,7 +477,7 @@ export function TestAgent(props: TestAgentProps) {
               <EuiFlexItem grow={false}>
                 {interactions.map((interaction, idx) => {
                   return (
-                    <>
+                    <div key={`interaction_${idx}`}>
                       <EuiFlexGroup direction="row">
                         <EuiFlexItem grow={2}></EuiFlexItem>
                         <EuiFlexItem grow={8}>
@@ -491,7 +491,7 @@ export function TestAgent(props: TestAgentProps) {
                               >
                                 <EuiFlexItem grow={false}>
                                   <EuiText size="xs" color="subdued">
-                                    User
+                                    You
                                   </EuiText>
                                 </EuiFlexItem>
                                 <EuiPanel borderRadius="l" color="plain">
@@ -513,20 +513,24 @@ export function TestAgent(props: TestAgentProps) {
                                 gutterSize="xs"
                                 alignItems="flexStart"
                               >
-                                <EuiFlexItem grow={false}>
+                                <EuiFlexItem
+                                  grow={false}
+                                  style={{ marginLeft: '4px' }}
+                                >
                                   <EuiText size="xs" color="subdued">
                                     Agent
                                   </EuiText>
                                 </EuiFlexItem>
                                 <EuiPanel borderRadius="l" color="plain">
+                                  {/**
+                                   * For previous interactions, just display the plaintext response.
+                                   * For the latest/current interactions, show extra info, such as
+                                   * any errors or execution traces.
+                                   */}
                                   {idx !== interactions.length - 1 ? (
-                                    <EuiText size="s">
-                                      {getIn(
-                                        interactions,
-                                        `${idx}.agentMsg`,
-                                        ''
-                                      )}
-                                    </EuiText>
+                                    formatAgentMsg(
+                                      getIn(interactions, `${idx}.agentMsg`, '')
+                                    )
                                   ) : taskInProgress ? (
                                     <EuiLoadingSpinner size="l" />
                                   ) : taskError ? (
@@ -540,25 +544,54 @@ export function TestAgent(props: TestAgentProps) {
                                         setTaskErrorFlyoutOpen(true)
                                       }
                                     >
-                                      Execution failed
+                                      {FAILED_MSG}
                                     </EuiSmallButtonEmpty>
                                   ) : (
-                                    <EuiText size="s">
-                                      {getIn(
-                                        interactions,
-                                        `${idx}.agentMsg`,
-                                        ''
-                                      )}
-                                    </EuiText>
+                                    formatAgentMsg(
+                                      getIn(interactions, `${idx}.agentMsg`, '')
+                                    )
                                   )}
                                 </EuiPanel>
+                                {idx === interactions.length - 1 &&
+                                  taskInProgress && (
+                                    <EuiSmallButtonEmpty
+                                      style={{
+                                        marginTop: '-4px',
+                                        marginLeft: '-4px',
+                                        marginBottom: '-8px',
+                                      }}
+                                      onClick={async () => {
+                                        stopTaskExecution();
+                                      }}
+                                    >
+                                      <EuiText size="xs" color="danger">
+                                        Cancel
+                                      </EuiText>
+                                    </EuiSmallButtonEmpty>
+                                  )}
+                                {idx === interactions.length - 1 &&
+                                  containsExecutionDetails && (
+                                    <EuiSmallButtonEmpty
+                                      style={{
+                                        marginLeft: '-4px',
+                                        marginRight: '12px',
+                                        marginTop: '-4px',
+                                        marginBottom: '-4px',
+                                      }}
+                                      onClick={async () => {
+                                        setExecutionDetailsFlyoutOpen(true);
+                                      }}
+                                    >
+                                      <EuiText size="xs">View details</EuiText>
+                                    </EuiSmallButtonEmpty>
+                                  )}
                               </EuiFlexGroup>
                             </EuiFlexItem>
                           </EuiFlexGroup>
                         </EuiFlexItem>
                         <EuiFlexItem grow={2}></EuiFlexItem>
                       </EuiFlexGroup>
-                    </>
+                    </div>
                   );
                 })}
               </EuiFlexItem>
@@ -708,8 +741,7 @@ export function TestAgent(props: TestAgentProps) {
                   >
                     {taskInProgress
                       ? 'Cancel'
-                      : !isEmpty(executeOutput) ||
-                        !isEmpty(taskError)
+                      : !isEmpty(taskError)
                       ? 'Re-run'
                       : 'Run'}
                   </EuiSmallButton>
@@ -742,17 +774,6 @@ export function TestAgent(props: TestAgentProps) {
                 </EuiFlexGroup>
               </EuiFlexItem>
             )}
-            {!isEmpty(executeOutput) && (
-              <EuiFlexItem grow={false}>
-                <EuiCodeBlock
-                  fontSize="m"
-                  isCopyable={true}
-                  overflowHeight={500}
-                >
-                  {executeOutput}
-                </EuiCodeBlock>
-              </EuiFlexItem>
-            )}
           </EuiFlexGroup>
         </EuiFlexItem> */}
       </EuiFlexItem>
@@ -770,4 +791,14 @@ function getModelResponseFromTask(taskResponse: any): string {
     (result: any) => result.name === 'response'
   ) as any;
   return getIn(modelResult, 'dataAsMap.response', '') as string;
+}
+
+function formatAgentMsg(agentMsg: string) {
+  return agentMsg === FAILED_MSG || agentMsg === CANCELED_MSG ? (
+    <i>
+      <EuiText size="s">{agentMsg}</EuiText>
+    </i>
+  ) : (
+    <EuiText size="s">{agentMsg}</EuiText>
+  );
 }
