@@ -138,8 +138,8 @@ export function AgentInputs(props: AgentInputsProps) {
   ]);
 
   useEffect(() => {
-    props.setUnsavedChanges(!allChangesSaved);
-  }, [allChangesSaved]);
+    props.setUnsavedChanges(!allChangesSaved || isLoading);
+  }, [allChangesSaved, isLoading]);
 
   // Utility fn to validate the form and update the workflow if valid
   async function validateAndUpdateWorkflow(
