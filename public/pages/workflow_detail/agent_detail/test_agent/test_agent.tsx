@@ -434,9 +434,9 @@ export function TestAgent(props: TestAgentProps) {
             </EuiTitle>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            <EuiFlexGroup direction="row">
+            <EuiFlexGroup direction="row" gutterSize="s">
               {!isEmpty(interactions) && (
-                <EuiFlexItem grow={false} style={{ marginTop: '16px' }}>
+                <EuiFlexItem grow={false} style={{ marginTop: '8px' }}>
                   <EuiSmallButtonEmpty
                     onClick={() => {
                       clearInteractionsState();
@@ -447,7 +447,7 @@ export function TestAgent(props: TestAgentProps) {
                 </EuiFlexItem>
               )}
               {!isEmpty(agentDetails) && (
-                <EuiFlexItem grow={false} style={{ marginTop: '16px' }}>
+                <EuiFlexItem grow={false} style={{ marginTop: '8px' }}>
                   <EuiSmallButtonEmpty
                     onClick={() => {
                       setAgentFlyoutOpen(true);
