@@ -26,6 +26,7 @@ import {
   EuiSpacer,
   EuiButtonIcon,
   EuiLoadingSpinner,
+  EuiCheckbox,
 } from '@elastic/eui';
 import {
   customStringify,
@@ -114,6 +115,10 @@ export function TestAgent(props: TestAgentProps) {
       getAgentDetails();
     }
   }, [agentId]);
+
+  // memory-related state. let users toggle to persist/pass memory while testing executions
+  const [memoryEnabled, setMemoryEnabled] = useState<boolean>(true);
+  const [memoryId, setMemoryId] = useState<string>('');
 
   const [executeInput, setExecuteInput] = useState<string>('');
   const [taskId, setTaskId] = useState<string>('');
@@ -204,6 +209,7 @@ export function TestAgent(props: TestAgentProps) {
   // leftover execution state.
   useEffect(() => {
     setTaskId('');
+    setMemoryId('');
     clearExecutionState();
   }, [props.uiConfig]);
 
@@ -457,6 +463,14 @@ export function TestAgent(props: TestAgentProps) {
                   </EuiSmallButtonEmpty>
                 </EuiFlexItem>
               )}
+              <EuiFlexItem grow={false} style={{ marginTop: '12px' }}>
+                <EuiCheckbox
+                  id={'memoryEnabled'}
+                  label="Enable memory"
+                  checked={memoryEnabled}
+                  onChange={(e) => setMemoryEnabled(!memoryEnabled)}
+                />
+              </EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>
         </EuiFlexGroup>
@@ -667,13 +681,19 @@ export function TestAgent(props: TestAgentProps) {
                               executeAgent({
                                 agentId,
                                 apiBody: customStringify({
-                                  parameters: { question: executeInput },
+                                  parameters: {
+                                    question: executeInput,
+                                    memory_id: memoryEnabled
+                                      ? memoryId
+                                      : undefined,
+                                  },
                                 }),
                                 dataSourceId,
                               })
                             )
                               .unwrap()
                               .then((resp) => {
+                                setMemoryId(resp?.response?.memory_id);
                                 setTaskId(resp?.task_id || '');
                                 clearExecutionState();
                               })
@@ -693,115 +713,6 @@ export function TestAgent(props: TestAgentProps) {
             </EuiFlexGroup>
           </EuiFlexItem>
         </EuiPanel>
-        {/* <EuiFlexItem grow={true} className="left-nav-scroll">
-          <EuiFlexGroup direction="column">
-            {props.unsavedChanges && (
-              <EuiFlexItem grow={false} style={{ marginBottom: '0px' }}>
-                <EuiCallOut
-                  size="s"
-                  iconType={'alert'}
-                  color="warning"
-                  title="Unsaved configuration changes detected"
-                />
-              </EuiFlexItem>
-            )}
-            {!isEmpty(taskError) && (
-              <EuiFlexItem grow={false}>
-                <EuiCallOut
-                  size="s"
-                  iconType={'alert'}
-                  color="danger"
-                  title="Execution task failed"
-                >
-                  {
-                    <EuiSmallButtonEmpty
-                      onClick={() => setTaskErrorFlyoutOpen(true)}
-                    >
-                      View full error
-                    </EuiSmallButtonEmpty>
-                  }
-                </EuiCallOut>
-              </EuiFlexItem>
-            )}
-            <EuiFlexItem grow={false}>
-              <EuiCompressedTextArea
-                fullWidth={true}
-                placeholder={'Ask a question'}
-                value={executeInput}
-                onChange={(e) => {
-                  setExecuteInput(e.target.value);
-                }}
-                isInvalid={false}
-                disabled={false}
-              />
-            </EuiFlexItem>
-            <EuiFlexItem grow={false} style={{ marginTop: '0px' }}>
-              <EuiFlexGroup direction="row" gutterSize="xs">
-                <EuiFlexItem grow={false}>
-                  <EuiSmallButton
-                    fill={false}
-                    disabled={isEmpty(agentId) || isEmpty(executeInput)}
-                    color={taskInProgress ? 'danger' : 'primary'}
-                    isLoading={false}
-                    onClick={async () => {
-                      if (taskInProgress) {
-                        stopTaskExecution();
-                      } else {
-                        await dispatch(
-                          executeAgent({
-                            agentId,
-                            apiBody: customStringify({
-                              parameters: { question: executeInput },
-                            }),
-                            dataSourceId,
-                          })
-                        )
-                          .unwrap()
-                          .then((resp) => {
-                            setTaskId(resp?.task_id || '');
-                            clearExecutionState();
-                          })
-                          .catch((err) => {});
-                      }
-                    }}
-                  >
-                    {taskInProgress
-                      ? 'Cancel'
-                      : !isEmpty(taskError)
-                      ? 'Re-run'
-                      : 'Run'}
-                  </EuiSmallButton>
-                </EuiFlexItem>
-                {taskInProgress && (
-                  <EuiFlexItem
-                    grow={false}
-                    style={{ marginLeft: '8px', marginTop: '4px' }}
-                  >
-                    <EuiLoadingSpinner size="l" />
-                  </EuiFlexItem>
-                )}
-              </EuiFlexGroup>
-            </EuiFlexItem>
-            {containsExecutionDetails && (
-              <EuiFlexItem
-                grow={false}
-                style={{ marginLeft: '4px', marginTop: '0px' }}
-              >
-                <EuiFlexGroup direction="row">
-                  <EuiFlexItem grow={false}>
-                    <EuiSmallButtonEmpty
-                      onClick={async () => {
-                        setExecutionDetailsFlyoutOpen(true);
-                      }}
-                    >
-                      View execution details
-                    </EuiSmallButtonEmpty>
-                  </EuiFlexItem>
-                </EuiFlexGroup>
-              </EuiFlexItem>
-            )}
-          </EuiFlexGroup>
-        </EuiFlexItem> */}
       </EuiFlexItem>
     </EuiPanel>
   );
