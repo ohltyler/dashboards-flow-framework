@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { isEmpty } from 'lodash';
 import {
   EuiText,
   EuiFlexGroup,
@@ -29,6 +30,7 @@ enum RESULTS_VIEW {
   HITS = 'hits',
   AGGREGATIONS = 'aggregations',
   RAW_RESPONSE = 'raw_response',
+  AGENT_SUMMARY = 'agent_summary',
 }
 
 const RESULTS_VIEW_OPTIONS = [
@@ -43,6 +45,10 @@ const RESULTS_VIEW_OPTIONS = [
   {
     id: RESULTS_VIEW.RAW_RESPONSE,
     label: 'Raw response',
+  },
+  {
+    id: RESULTS_VIEW.AGENT_SUMMARY,
+    label: 'Agent summary',
   },
 ];
 
@@ -121,7 +127,7 @@ export function SearchResults(props: SearchResultsProps) {
               idSelected={selectedView}
               onChange={handleViewChange}
               isFullWidth={false}
-              style={{ width: '275px' }}
+              style={{ width: '400px' }}
               data-testid="resultsViewButtonGroup"
             />
           </EuiFlexItem>
@@ -144,10 +150,14 @@ export function SearchResults(props: SearchResultsProps) {
               <>
                 {hasHits(props.searchResponse) ? (
                   <div data-testid="resultsTableContainer">
-                    <ResultsTable hits={props.searchResponse?.hits?.hits || []} />
+                    <ResultsTable
+                      hits={props.searchResponse?.hits?.hits || []}
+                    />
                   </div>
                 ) : (
-                  <EuiText size="s" data-testid="noDocumentsMessage">No documents found</EuiText>
+                  <EuiText size="s" data-testid="noDocumentsMessage">
+                    No documents found.
+                  </EuiText>
                 )}
               </>
             ) : selectedView === RESULTS_VIEW.AGGREGATIONS ? (
@@ -163,10 +173,12 @@ export function SearchResults(props: SearchResultsProps) {
                     {customStringify(props.searchResponse.aggregations)}
                   </EuiCodeBlock>
                 ) : (
-                  <EuiText size="s" data-testid="noAggregationsMessage">No aggregations found</EuiText>
+                  <EuiText size="s" data-testid="noAggregationsMessage">
+                    No aggregations found.
+                  </EuiText>
                 )}
               </>
-            ) : (
+            ) : selectedView === RESULTS_VIEW.RAW_RESPONSE ? (
               <>
                 <EuiCodeBlock
                   language="json"
@@ -178,10 +190,33 @@ export function SearchResults(props: SearchResultsProps) {
                   {customStringify(props.searchResponse)}
                 </EuiCodeBlock>
               </>
+            ) : (
+              <>
+                {!isEmpty(getAgentSummaryFromResponse(props.searchResponse)) ? (
+                  <EuiCodeBlock
+                    language="json"
+                    fontSize="s"
+                    paddingSize="m"
+                    isCopyable
+                    data-testid="rawResponseCodeBlock"
+                  >
+                    {getAgentSummaryFromResponse(props.searchResponse)}
+                  </EuiCodeBlock>
+                ) : (
+                  <EuiText size="s" data-testid="noAgentSummaryMessage">
+                    No agent summary found. Only conversational agents will
+                    produce summaries.
+                  </EuiText>
+                )}
+              </>
             )}
           </EuiFlexItem>
         </EuiFlexGroup>
       )}
     </EuiFlexGroup>
   );
+}
+
+function getAgentSummaryFromResponse(searchResponse?: any): {} | undefined {
+  return searchResponse?.ext?.agent_steps_summary;
 }
