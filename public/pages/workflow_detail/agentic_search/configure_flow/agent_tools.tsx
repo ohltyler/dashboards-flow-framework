@@ -198,7 +198,11 @@ export function AgentTools({ agentForm, setAgentForm }: AgentToolsProps) {
     });
   }
 
-  const renderToolForm = (toolType: TOOL_TYPE, index: number): any => {
+  const renderToolForm = (
+    toolType: TOOL_TYPE,
+    index: number,
+    enabled: boolean
+  ): any => {
     const toolForm = getIn(agentForm, `tools.${index}`) as Tool;
     switch (toolType) {
       case TOOL_TYPE.QUERY_PLANNING:
@@ -285,6 +289,7 @@ export function AgentTools({ agentForm, setAgentForm }: AgentToolsProps) {
                   <NoDeployedModelsCallout />
                 ) : (
                   <EuiSelect
+                    disabled={!enabled}
                     options={
                       modelFound || modelEmpty
                         ? modelOptions
@@ -323,6 +328,7 @@ export function AgentTools({ agentForm, setAgentForm }: AgentToolsProps) {
               fullWidth
             >
               <EuiRadioGroup
+                disabled={!enabled}
                 options={generationTypeRadios}
                 idSelected={generationType}
                 onChange={(id) => {
@@ -472,6 +478,7 @@ export function AgentTools({ agentForm, setAgentForm }: AgentToolsProps) {
               fullWidth
             >
               <EuiFieldText
+                disabled={!enabled}
                 value={engine}
                 onChange={(e) => {
                   updateParameterValue('engine', e.target.value, index);
@@ -561,7 +568,7 @@ export function AgentTools({ agentForm, setAgentForm }: AgentToolsProps) {
                   }
                 }}
               >
-                {renderToolForm(toolType, index)}
+                {renderToolForm(toolType, index, toolEnabled)}
               </EuiAccordion>
               <EuiSpacer size="s" />
             </EuiPanel>
